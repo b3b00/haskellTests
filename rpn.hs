@@ -30,6 +30,8 @@ isOp x =	case operation x  of
 			Nothing -> False
 			Just op -> True
 
+isOperation :: String -> Bool
+isOperation x = not $ isNumber x
 
 {-
 	Split an expression (represented as a string array) into a tuple containing
@@ -37,7 +39,7 @@ isOp x =	case operation x  of
 		- a operation stack (as string array)
 -}
 splitExpression :: [String] -> ([String],[String])
-splitExpression expr = ((filter isNumber expr), (filter isOp expr))
+splitExpression expr = ((filter isNumber expr), (filter (isOperation) expr))
 
 convert :: ([String],[String]) -> ([Double],[String]) 
 convert (n,o) = ((map (read::String->Double) n),o) 
