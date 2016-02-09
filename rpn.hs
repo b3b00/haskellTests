@@ -28,18 +28,17 @@ stackOp op
    | op == "S" = Operation_n "S" (+)
    | otherwise = No_Op op (\x -> x)
 
-display :: OperationDescriptor -> String
-display (Operation_1 name f) = name++"/1"
-display (Operation_2 name f) = name++"/1"
-display (Operation_n name f) = name++"/n"
-display (No_Op name f)  = "NOOP ("++name++")"
+
+-- single operation evaluation
 
 evaluateOperation :: OperationDescriptor -> [Double] -> [Double]
-evaluateOperation (Operation_1 name func ) operands = [func $ head operands]++(tail operands)
-evaluateOperation (Operation_2 name func ) operands = [func (operands!!0) (operands!!1)]++(drop 2 operands)
-evaluateOperation (Operation_n name func ) operands = [foldl1 func operands]
+evaluateOperation (Operation_1 name func ) operands = traceShow (name++"/1 "++(show operands)) [func $ head operands]++(tail operands)
+evaluateOperation (Operation_2 name func ) operands = traceShow (name++"/2 "++(show operands))[func (operands!!0) (operands!!1)]++(drop 2 operands)
+evaluateOperation (Operation_n name func ) operands = traceShow (name++"/n "++(show operands))[foldl1 func operands]
 evaluateOperation (No_Op name func) operands = error ("unknown operation :: "++name)
 
+evalOp :: OperationDescriptor -> [Double] -> [Double]
+evalOp operation nums = evaluateOperation operation nums  
 
 {-
 **************************************
@@ -59,11 +58,10 @@ isNumber str =
 
 
 {-
-	returns True if str represents an Operation,
-			False if str is a number
-			throws an error otherwise	
--}	  
-			
+	returns True if x represents an Operation,
+			False if x is a number
+						
+-}	  	
 isOperation :: String -> Bool
 isOperation x = not $ isNumber x 
 
@@ -75,6 +73,8 @@ isOperation x = not $ isNumber x
 splitExpression :: [String] -> ([String],[String])
 splitExpression expr = ((filter isNumber expr), (filter isOperation expr))
 
+-- convert parsing result from ([String],[String]) to ([OperationDescriptor], [Double])
+-- ready to be evaluated
 convert :: ([String],[String]) -> ([Double],[OperationDescriptor]) 
 convert (n,o) = ((map (read::String->Double) n),(map stackOp o)) 
 
@@ -86,13 +86,7 @@ convert (n,o) = ((map (read::String->Double) n),(map stackOp o))
 parse :: String -> ([Double],[OperationDescriptor])
 parse code = convert (splitExpression (words code))
  
-evalOp :: OperationDescriptor -> [Double] -> [Double]
-evalOp operation nums = evaluateOperation operation nums  
- 
 
-
-   
-   
  
 
 			
@@ -107,7 +101,7 @@ main loop : evaluate a double stack
 run :: [Double] -> [OperationDescriptor] -> Double
 run nums ops 
 	| null ops && (length nums > 1) = error "bad expression, unable to evaluate (missing or wrong operator ?)"
-	| null ops = traceShow("no more op: ",nums) head nums
+	| null ops = traceShow("final result: "++(show $ head nums)) head nums
 	| (length ops >= 1) && (length nums >= 1) =  run (evalOp (head ops) nums) (tail ops)  
 	| otherwise = error "bad expression !"
 
