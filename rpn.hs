@@ -53,6 +53,39 @@ parse :: String -> ([Double],[String])
 parse code = convert (splitExpression (words code))
 
 
+data OperationDescriptor = Operation_1 String (Double -> Double) | Operation_2 String (Double -> Double -> Double) | Operation_n String (Double -> Double -> Double) | No_Op String (Double -> Double)
+
+display :: OperationDescriptor -> String
+display (Operation_1 name f) = name++"/1"
+display (Operation_2 name f) = name++"/1"
+display (Operation_n name f) = name++"/n"
+display (No_Op name f)  = "NOOP ("++name++")"
+
+evaluateOperation :: OperationDescriptor -> [Double] -> [Double]
+evaluateOperation (Operation_1 name func ) operands = [func $ head operands]++(tail operands)
+evaluateOperation (Operation_2 name func ) operands = [func (operands!!0) (operands!!1)]++(drop 2 operands)
+evaluateOperation (Operation_n name func ) operands = [foldl1 func operands]
+evaluateOperation (No_Op name func) operands = error ("unknown operation :: "++name)
+
+
+
+
+stackOp :: String -> OperationDescriptor 
+stackOp op 
+   | op == "+" = Operation_2 "+" (+)
+   | op == "-" = Operation_2 "-" (-)
+   | op == "*" = Operation_2 "*" (*)
+   | op == "/" = Operation_2 "/" (/)
+   | op == "sin" = Operation_1 "sin" (sin)
+   | op == "P" = Operation_n "P" (*)
+   | op == "S" = Operation_n "S" (+)
+   | otherwise = No_Op op (\x -> x)
+ 
+evalOp :: String -> [Double] -> [Double]
+evalOp name nums = evaluateOperation (stackOp name) nums  
+ 
+
+
 operation :: String -> Maybe (Double -> Double -> Double)
 operation op 
    | op == "+" = Just (+)
@@ -61,15 +94,14 @@ operation op
    | op == "/" = Just (/)
    | otherwise = Nothing
 
+   
+   
  
 {-
 single operation evaluation
 	- op : operation string
 	- args : 2 Double array
 -}	
-
-
-
 evaluate :: String -> [Double] -> Double	
 evaluate op args = case operation op  of
 			Nothing -> error ("unknown operation : " ++ op)
@@ -80,6 +112,19 @@ main loop : evaluate a double stack
    - nums : Double stack
    - ops : operations stack
 -}
+
+run :: [Double] -> [String] -> Double
+run nums ops 
+	| null ops && (length nums > 1) = error "bad expression, unable to evaluate (missing or wrong operator ?)"
+	| null ops = traceShow("no more op: ",nums) head nums
+	| (length ops >= 1) && (length nums >= 1) =  run (evalOp (head ops) nums) (tail ops)  
+	| otherwise = error "bad expression !"
+
+computeRPN :: String -> Double
+computeRPN expr = run n o 
+		where (n,o) = parse expr
+	
+	
 eval :: [Double] -> [String] -> Double
 eval nums ops
 	| null ops && (length nums > 1) = error "bad expression, unable to evaluate (missing or wrong operator ?)"
@@ -97,11 +142,11 @@ rpn expr = eval n o
 	
 {-
 	******* MAIN *******
--}
+
 main = do
   expr <- getLine
   putStrLn (show (rpn expr))	
-	
+-}	
 	
 
 
