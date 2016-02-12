@@ -1,0 +1,14 @@
+Name:		RPN
+Version:	1.0
+Cabal-Version:  >= 1.2
+License:	BSD3
+License-File:	LICENSE
+Author:		Olivier Duhart
+Homepage:	
+Category:	haskell discovery
+Synopsis:	A simple RPN evaluator 
+
+Executable rpn
+  Main-Is:        rpn.hs
+  Build-Depends:  base 
+  Hs-Source-Dirs: .  
