@@ -1,4 +1,4 @@
 # haskellTests
- - rpn.hs : Reverse Polish Notation  evaluator
- - 
+ - rpn : Reverse Polish Notation  evaluator
+ - happyDocExamples : happy parser generator examples
  
