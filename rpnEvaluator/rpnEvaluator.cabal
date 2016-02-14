@@ -14,18 +14,19 @@ category:            playing with haskell/cabal
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
-test-framework, test-framework-hunit, test-framework-quickcheck2,
-                        HUnit, QuickCheck
+
 
 executable rpnEvaluator
-  main-is:             rpn.hs
-  -- other-modules:       
-  -- other-extensions:    
+  main-is: 			   Main.hs
+  Modules: 			   RPN, Main
   build-depends:       base >=4.8 && <4.9
-  -- hs-source-dirs:      
   default-language:    Haskell2010
 
 Test-Suite test-rpn
-    type:       exitcode-stdio-1.0
-    main-is:    test-foo.hs
-    build-depends: base
+    type:              exitcode-stdio-1.0
+  main-is:             Tests.hs
+  build-depends:       base,
+                       test-framework,
+                       test-framework-hunit,
+                       HUnit
+  default-language:    Haskell2010

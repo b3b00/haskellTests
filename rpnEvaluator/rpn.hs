@@ -34,9 +34,9 @@ stackOp op
 -- single operation evaluation
 
 evaluateOperation :: OperationDescriptor -> [Double] -> [Double]
-evaluateOperation (Operation_1 name func ) operands = traceShow (name++"/1 "++(show operands)) [func $ head operands]++(tail operands)
-evaluateOperation (Operation_2 name func ) operands = traceShow (name++"/2 "++(show operands))[func (operands!!0) (operands!!1)]++(drop 2 operands)
-evaluateOperation (Operation_n name func ) operands = traceShow (name++"/n "++(show operands))[foldl1 func operands]
+evaluateOperation (Operation_1 name func ) operands = [func $ head operands]++(tail operands)
+evaluateOperation (Operation_2 name func ) operands = [func (operands!!0) (operands!!1)]++(drop 2 operands)
+evaluateOperation (Operation_n name func ) operands = [foldl1 func operands]
 evaluateOperation (No_Op name func) operands = error ("unknown operation :: "++name)
 
 evalOp :: OperationDescriptor -> [Double] -> [Double]
@@ -103,7 +103,7 @@ main loop : evaluate a double stack
 run :: [Double] -> [OperationDescriptor] -> Double
 run nums ops 
 	| null ops && (length nums > 1) = error "bad expression, unable to evaluate (missing or wrong operator ?)"
-	| null ops = traceShow("final result: "++(show $ head nums)) head nums
+	| null ops =  head nums
 	| (length ops >= 1) && (length nums >= 1) =  run (evalOp (head ops) nums) (tail ops)  
 	| otherwise = error "bad expression !"
 

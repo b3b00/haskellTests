@@ -37,11 +37,11 @@ Term  : Term '*' Factor         { \p -> traceShow ("TIMES :: "++(show p))$1 p * 
       | Factor                  { $1 }
 
 Factor			  
-      : int                     { \p -> $1 }
+      : int                     { \p ->  $1 }
       | var                     { \p -> case lookup $1 p of
-	                                    Nothing -> error "no var"
-					    Just i  -> i }
-      | '(' Exp ')'             { $2 }
+	                                    Nothing -> error "no var "
+					            Just i  ->   i }
+      | '(' Exp ')'             {  $2 }
 	  
 {
 happyError a = error "error ! so baad!"
