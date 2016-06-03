@@ -6,14 +6,14 @@ import Debug.Trace
 import GHC.Float
 {-
 ******************************************************************************************************************
-							RPN (Reverse Polish Notation) evaluator
+                            RPN (Reverse Polish Notation) evaluator
 ******************************************************************************************************************
 -}
 
 {-
 **************************************
 operation Type
-**************************************	
+**************************************    
 -}
 
 data OperationDescriptor = Operation_1 String (Double -> Double) | Operation_2 String (Double -> Double -> Double) | Operation_n String (Double -> Double -> Double) | No_Op String (Double -> Double)
@@ -45,12 +45,12 @@ evalOp operation nums = evaluateOperation operation nums
 {-
 **************************************
 RPN parsing
-**************************************	
+**************************************    
 -}
 
 
 {-
-	returns True if str represents a number
+    returns True if str represents a number
 -}
 isNumber :: String -> Bool
 isNumber str =
@@ -60,17 +60,17 @@ isNumber str =
 
 
 {-
-	returns True if x represents an Operation,
-			False if x is a number
-						
--}	  	
+    returns True if x represents an Operation,
+            False if x is a number
+                        
+-}
 isOperation :: String -> Bool
 isOperation x = not $ isNumber x 
 
 {-
-	Split an expression (represented as a string array) into a tuple containing
-	    - a number stack (as string array)
-		- a operation stack (as string array)
+    Split an expression (represented as a string array) into a tuple containing
+        - a number stack (as string array)
+        - a operation stack (as string array)
 -}
 splitExpression :: [String] -> ([String],[String])
 splitExpression expr = ((filter isNumber expr), (filter isOperation expr))
@@ -81,9 +81,9 @@ convert :: ([String],[String]) -> ([Double],[OperationDescriptor])
 convert (n,o) = ((map (read::String->Double) n),(map stackOp o)) 
 
 {-
-	parse a string into a double stack
-		- a number stack (as double array)
-		- an operation stack (as string array)
+    parse a string into a double stack
+        - a number stack (as double array)
+        - an operation stack (as string array)
 -}
 parse :: String -> ([Double],[OperationDescriptor])
 parse code = convert (splitExpression (words code))
@@ -91,7 +91,6 @@ parse code = convert (splitExpression (words code))
 
  
 
-			
 {-
 **************************************
 main loop : evaluate a double stack 
@@ -102,30 +101,23 @@ main loop : evaluate a double stack
 
 run :: [Double] -> [OperationDescriptor] -> Double
 run nums ops 
-	| null ops && (length nums > 1) = error "bad expression, unable to evaluate (missing or wrong operator ?)"
-	| null ops =  head nums
-	| (length ops >= 1) && (length nums >= 1) =  run (evalOp (head ops) nums) (tail ops)  
-	| otherwise = error "bad expression !"
+    | null ops && (length nums > 1) = error "bad expression, unable to evaluate (missing or wrong operator ?)"
+    | null ops =  head nums
+    | (length ops >= 1) && (length nums >= 1) =  run (evalOp (head ops) nums) (tail ops)  
+    | otherwise = error "bad expression !"
 
-	
+    
 {-
-	entry point : evaluate an expression 
-	   - expr t: the expression as a string
--}	
+    entry point : evaluate an expression 
+       - expr t: the expression as a string
+-}    
 computeRPN :: String -> Double
 computeRPN expr = run n o 
-		where (n,o) = parse expr
-	
-	
-{-
-	******* MAIN *******
--}
-main = do
-  expr <- getLine
-  putStrLn (show (computeRPN expr))	
-	
-	
+        where (n,o) = parse expr
+    
+    
+    
 
 
-	  
-		  
+      
+          
