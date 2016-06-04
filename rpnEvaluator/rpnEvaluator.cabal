@@ -21,11 +21,12 @@ executable rpnEvaluator
   build-depends:       base >=4.9
   default-language:    Haskell2010
 
-Test-Suite test-rpn
-    type:              exitcode-stdio-1.0
-  main-is:             Tests.hs
+Test-Suite rpnTestSuite
+  type:                exitcode-stdio-1.0
+  main-is:             RPNTests.hs
   build-depends:       base,
                        test-framework,
                        test-framework-hunit,
                        HUnit
-  default-language:    Haskell2010
+  default-language:    Haskell2010  
+ 
