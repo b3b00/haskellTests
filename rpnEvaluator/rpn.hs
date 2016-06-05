@@ -11,6 +11,16 @@ import GHC.Float
 -}
 
 {-
+specific operations
+-}
+fact :: Double -> Double -> Double
+fact res n 
+    | n == 0.0 = res
+    | otherwise = fact  (n*res) (n-1)
+
+{-f :: double -> double
+f n = fact n 1.0 -}
+{-
 **************************************
 operation Type
 **************************************    
@@ -28,10 +38,13 @@ stackOp op
    | op == "sin" = Operation_1 "sin" (sin)
    | op == "P" = Operation_n "P" (*)
    | op == "S" = Operation_n "S" (+)
+   | op == "!" = Operation_1 "!" (fact 1)
    | otherwise = No_Op op (\x -> x)
 
 
 -- single operation evaluation
+
+
 
 evaluateOperation :: OperationDescriptor -> [Double] -> [Double]
 evaluateOperation (Operation_1 name func ) operands = [func $ head operands]++(tail operands)
