@@ -15,13 +15,13 @@ available operators :
 - [X] sin/1
 - [X] cos/1
 - [X] tan/1
-- [] acos/1
-- [] asin/1
-- [] atan/1
-- [] sqr/1 : root square
-- [] ^: power/2
-- [] %/2 : modulo
-- [] log/1
-- [] ln/1
+- [ ] acos/1
+- [ ] asin/1
+- [ ] atan/1
+- [ ] sqr/1 : root square
+- [ ] ^: power/2
+- [ ] %/2 : modulo
+- [ ] log/1
+- [ ] ln/1
 - [X] !/1 : factorial
  
