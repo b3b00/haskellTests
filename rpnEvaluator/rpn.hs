@@ -15,8 +15,8 @@ specific operations
 -} 
 rec_fact :: Double -> Double -> Double
 rec_fact res n 
-    | n == 0.0 = traceShow "final" $ res
-    | otherwise = traceShow n $ rec_fact  (n*res) (n-1.0)
+    | n == 0.0 =  res
+    | otherwise = rec_fact  (n*res) (n-1.0)
 
 fact :: Double -> Double
 fact n = rec_fact 1.0 n 
@@ -26,18 +26,24 @@ operation Type
 **************************************    
 -}
 
-data OperationDescriptor = Operation_1 String (Double -> Double) | Operation_2 String (Double -> Double -> Double) | Operation_n String (Double -> Double -> Double) | No_Op String (Double -> Double)
+data OperationDescriptor = Operation_0 String Double | Operation_1 String (Double -> Double) | Operation_2 String (Double -> Double -> Double) | Operation_n String (Double -> Double -> Double) | No_Op String (Double -> Double)
 
 
 stackOp :: String -> OperationDescriptor 
 stackOp op 
+   | op == "PI" = Operation_0 "pi" pi
+   | op == "e" = Operation_0 "e" (exp 1.0)
    | op == "+" = Operation_2 "+" (+)
    | op == "-" = Operation_2 "-" (-)
    | op == "*" = Operation_2 "*" (*)
    | op == "/" = Operation_2 "/" (/)
+   | op == "log" = Operation_1 "log" (log)
    | op == "sin" = Operation_1 "sin" (sin)
    | op == "cos" = Operation_1 "cos" (cos)
    | op == "tan" = Operation_1 "cos" (tan)
+   | op == "asin" = Operation_1 "sin" (asin)
+   | op == "acos" = Operation_1 "cos" (acos)
+   | op == "atan" = Operation_1 "cos" (atan)
    | op == "P" = Operation_n "P" (*)
    | op == "S" = Operation_n "S" (+)
    | op == "!" = Operation_1 "!" (fact)
@@ -51,6 +57,7 @@ stackOp op
 
 
 evaluateOperation :: OperationDescriptor -> [Double] -> [Double]
+evaluateOperation (Operation_0 name func ) operands = [func]++(operands)
 evaluateOperation (Operation_1 name func ) operands = [func $ head operands]++(tail operands)
 evaluateOperation (Operation_2 name func ) operands = [func (operands!!0) (operands!!1)]++(drop 2 operands)
 evaluateOperation (Operation_n name func ) operands = [foldl1 func operands]
@@ -116,12 +123,15 @@ main loop : evaluate a double stack
 **************************************   
 -}
 
+{-showError :: Integer -> Integer -> String
+showError n o = "error" ++ show n-}
+
 run :: [Double] -> [OperationDescriptor] -> Double
 run nums ops 
     | null ops && (length nums > 1) = error "bad expression, unable to evaluate (missing or wrong operator ?)"
     | null ops =  head nums
-    | (length ops >= 1) && (length nums >= 1) =  run (evalOp (head ops) nums) (tail ops)  
-    | otherwise = error "bad expression !"
+    | (length ops >= 1) && (length nums >= 0) =  run (evalOp (head ops) nums) (tail ops)  
+    | otherwise = error ("bad expression !")
 
     
 {-

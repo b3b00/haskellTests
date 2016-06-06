@@ -43,12 +43,14 @@ testSQRT = TestCase $ ( assertEqual "for (computeRPN 144.0 sqrt)" (12.0) ((compu
 
 testPower = TestCase $ ( assertEqual "for (computeRPN 2.0 2.0 ^)" (4.0) ((computeRPN "2.0 2.0 ^"))) 
 
+testPi = TestCase $ ( assertEqual "for (computeRPN PI)" (pi) ((computeRPN "PI"))) 
+
 --test3 = TestCase $ ( assertException ErrorCall (evaluate $ computeRPN " 2 2 X"))
 
 
 
 -- hUnitTestToTests: Adapt an existing HUnit test into a list of test-framework tests
-tests = hUnitTestToTests $ TestList [TestLabel "testPlus" testPlus,TestLabel "testSum" testSum,TestLabel "testFactorial" testFactorial,TestLabel "testSQRT" testSQRT,TestLabel "testPower" testPower]
+tests = hUnitTestToTests $ TestList [TestLabel "testPlus" testPlus,TestLabel "testSum" testSum,TestLabel "testFactorial" testFactorial,TestLabel "testSQRT" testSQRT,TestLabel "testPower" testPower,TestLabel "testPi" testPi]
 
 main = defaultMain tests          
         
