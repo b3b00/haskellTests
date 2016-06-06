@@ -18,7 +18,7 @@ rec_fact res n
     | n == 0.0 = res
     | otherwise = rec_fact  (n*res) (n-1)
 
-fact :: double -> double
+fact :: Double -> Double
 fact n = rec_fact n 1.0 
 {-
 **************************************
