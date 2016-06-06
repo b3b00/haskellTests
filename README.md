@@ -5,6 +5,8 @@
  
 #RPN evaluator
 available operators :
+- [X] PI/0 : pi constant
+- [X] e/0 : euler constant
 - [X] +/2 : add
 - [X] -/2 : substract
 - [X] */2 : multiply
@@ -15,11 +17,11 @@ available operators :
 - [X] sin/1
 - [X] cos/1
 - [X] tan/1
-- [ ] acos/1
-- [ ] asin/1
-- [ ] atan/1
-- [ ] sqr/1 : root square
-- [ ] ^: power/2
+- [X] acos/1
+- [X] asin/1
+- [X] atan/1
+- [X] sqr/1 : root square
+- [X] ^: power/2
 - [ ] %/2 : modulo
 - [ ] log/1
 - [ ] ln/1
