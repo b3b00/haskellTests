@@ -12,14 +12,14 @@ import GHC.Float
 
 {-
 specific operations
--}
-fact :: Double -> Double -> Double
-fact res n 
+-} 
+rec_fact :: Double -> Double -> Double
+rec_fact res n 
     | n == 0.0 = res
-    | otherwise = fact  (n*res) (n-1)
+    | otherwise = rec_fact  (n*res) (n-1)
 
-{-f :: double -> double
-f n = fact n 1.0 -}
+fact :: double -> double
+fact n = rec_fact n 1.0 
 {-
 **************************************
 operation Type
@@ -36,9 +36,11 @@ stackOp op
    | op == "*" = Operation_2 "*" (*)
    | op == "/" = Operation_2 "/" (/)
    | op == "sin" = Operation_1 "sin" (sin)
+   | op == "cos" = Operation_1 "cos" (cos)
+   | op == "tan" = Operation_1 "cos" (tan)
    | op == "P" = Operation_n "P" (*)
    | op == "S" = Operation_n "S" (+)
-   | op == "!" = Operation_1 "!" (fact 1)
+   | op == "!" = Operation_1 "!" (fact)
    | otherwise = No_Op op (\x -> x)
 
 
