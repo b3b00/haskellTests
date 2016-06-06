@@ -13,8 +13,8 @@ available operators :
 - [X] sum/n : sum all stack
 - [X] prod/n : prod all stack
 - [X] sin/1
-- [] cos/1
-- [] tan/1
+- [X] cos/1
+- [X] tan/1
 - [] acos/1
 - [] asin/1
 - [] atan/1
