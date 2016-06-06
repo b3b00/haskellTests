@@ -23,7 +23,7 @@ available operators :
 - [X] sqr/1 : root square
 - [X] ^: power/2
 - [ ] %/2 : modulo
-- [ ] log/1
+- [X] log/1
 - [ ] ln/1
 - [X] !/1 : factorial
  
