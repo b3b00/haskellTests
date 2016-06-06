@@ -38,6 +38,7 @@ stackOp op
    | op == "*" = Operation_2 "*" (*)
    | op == "/" = Operation_2 "/" (/)
    | op == "log" = Operation_1 "log" (log)
+   | op == "ln" = Operation_1 "log" (logBase (exp 1.0) )
    | op == "sin" = Operation_1 "sin" (sin)
    | op == "cos" = Operation_1 "cos" (cos)
    | op == "tan" = Operation_1 "cos" (tan)
