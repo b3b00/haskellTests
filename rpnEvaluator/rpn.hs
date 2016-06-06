@@ -15,11 +15,11 @@ specific operations
 -} 
 rec_fact :: Double -> Double -> Double
 rec_fact res n 
-    | n == 0.0 = res
-    | otherwise = rec_fact  (n*res) (n-1)
+    | n == 0.0 = traceShow "final" $ res
+    | otherwise = traceShow n $ rec_fact  (n*res) (n-1.0)
 
 fact :: Double -> Double
-fact n = rec_fact n 1.0 
+fact n = rec_fact 1.0 n 
 {-
 **************************************
 operation Type
