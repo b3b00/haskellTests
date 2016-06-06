@@ -32,19 +32,23 @@ import RPN
 
 
 --test2:: Test
-test1 = TestCase $ (assertEqual "for (computeRPN \"2 2 +\")" (4.0) ((computeRPN "2 2 +")))
+testPlus = TestCase $ (assertEqual "for (computeRPN \"2 2 +\")" (4.0) ((computeRPN "2 2 +")))
 
-test2 = TestCase $ ( assertEqual "for (computeRPN 3 3 3 3 S)" (12.0) ((computeRPN"3 3 3 3 S"))) 
+testSum = TestCase $ ( assertEqual "for (computeRPN 3 3 3 3 S)" (12.0) ((computeRPN "3 3 3 3 S"))) 
 
 
-test3 = TestCase $ ( assertEqual "for (computeRPN 5.0 !)" (5.0*4.0*3.0*2.0*1.0) ((computeRPN"3 3 3 3 S"))) 
+testFactorial = TestCase $ ( assertEqual "for (computeRPN 5.0 !)" (5.0*4.0*3.0*2.0*1.0) ((computeRPN "5.0 !"))) 
+
+testSQRT = TestCase $ ( assertEqual "for (computeRPN 144.0 sqrt)" (12.0) ((computeRPN "144.0 sqrt"))) 
+
+testPower = TestCase $ ( assertEqual "for (computeRPN 2.0 2.0 ^)" (4.0) ((computeRPN "2.0 2.0 ^"))) 
 
 --test3 = TestCase $ ( assertException ErrorCall (evaluate $ computeRPN " 2 2 X"))
 
 
 
 -- hUnitTestToTests: Adapt an existing HUnit test into a list of test-framework tests
-tests = hUnitTestToTests $ TestList [TestLabel "test1" test1, TestLabel "test2" test2]
+tests = hUnitTestToTests $ TestList [TestLabel "testPlus" testPlus,TestLabel "testSum" testSum,TestLabel "testFactorial" testFactorial,TestLabel "testSQRT" testSQRT,TestLabel "testPower" testPower]
 
 main = defaultMain tests          
         

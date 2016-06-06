@@ -41,6 +41,8 @@ stackOp op
    | op == "P" = Operation_n "P" (*)
    | op == "S" = Operation_n "S" (+)
    | op == "!" = Operation_1 "!" (fact)
+   | op == "^" = Operation_2 "^" (**)   
+   | op == "sqrt" = Operation_1 "square root" (sqrt)   
    | otherwise = No_Op op (\x -> x)
 
 
