@@ -22,8 +22,8 @@ available operators :
 - [X] atan/1
 - [X] sqr/1 : root square
 - [X] ^: power/2
-- [ ] %/2 : modulo
+- [ ] ~~%/2 : modulo~~
 - [X] log/1
-- [ ] ln/1
+- [X] ln/1
 - [X] !/1 : factorial
  
