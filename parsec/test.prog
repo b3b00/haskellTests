@@ -1,0 +1,10 @@
+(
+	(
+		if true then
+			(a:=42)
+		else
+			(a := 24);	
+		while true do
+			(a := a - 1)
+	)
+)
