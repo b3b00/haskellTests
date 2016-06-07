@@ -35,7 +35,7 @@ languageDef =
                                      , "print"
                                      ]
            , Token.reservedOpNames = ["+", "-", "*", "/", ":="
-                                     , "<", ">", "and", "or", "not"
+                                     , "<", ">", "and", "or", "not", "=="
                                      ]
            }
 
@@ -129,6 +129,7 @@ aOperators = [ [Prefix (reservedOp "-"   >> return (Neg             ))          
               ]
  
 bOperators = [ [Prefix (reservedOp "not" >> return (Not             ))          ]
+             , [Infix (reservedOp "==" >> return (BBinary Eq        )) AssocLeft]
              , [Infix  (reservedOp "and" >> return (BBinary And     )) AssocLeft,
                 Infix  (reservedOp "or"  >> return (BBinary Or      )) AssocLeft]
              ]
