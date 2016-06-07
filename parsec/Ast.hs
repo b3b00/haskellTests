@@ -29,5 +29,6 @@ data Stmt = Seq [Stmt]
           | Assign String AExpr
           | If BExpr Stmt Stmt
           | While BExpr Stmt
+          | Print AExpr
           | Skip
             deriving (Show)

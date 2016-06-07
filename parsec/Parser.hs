@@ -32,6 +32,7 @@ languageDef =
                                      , "not"
                                      , "and"
                                      , "or"
+                                     , "print"
                                      ]
            , Token.reservedOpNames = ["+", "-", "*", "/", ":="
                                      , "<", ">", "and", "or", "not"
@@ -75,6 +76,13 @@ statement' =   ifStmt
            <|> whileStmt
            <|> skipStmt
            <|> assignStmt
+           <|> printStmt
+
+printStmt :: Parser Stmt
+printStmt =
+  do reserved "print"
+     aexpr <- aExpression
+     return $ Print aexpr
     
 ifStmt :: Parser Stmt
 ifStmt =
