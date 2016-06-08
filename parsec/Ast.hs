@@ -20,7 +20,7 @@ data AExpr = Var String
              deriving (Show)
 
 data ABinOp = Add
-            | Subtract
+            | Substract
             | Multiply
             | Divide
               deriving (Show)

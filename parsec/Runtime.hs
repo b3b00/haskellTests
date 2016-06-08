@@ -6,39 +6,53 @@ import Debug.Trace
 
 
 --play :: Stmt -> List -> IO()
-play stmt map = do
+play stmt evalContext = do
     putStrLn(show(stmt))
 
 run :: Stmt -> IO()
 run stmt = do
     play stmt []
 
-evalBExpr :: BExpr -> [a] -> (Bool,[a])
-evalBExpr e map = case e of
-    BoolConst b -> (b,map)
-    Not expr ->  do((not(fst(evalBExpr expr map))),(snd (evalBExpr expr map)))                
-    BBinary op left right -> evalBBoolOperator op left right map
-    RBinary op left right -> evalRBoolOperator op left right map
 
-evalBBoolOperator :: BBinOp -> BExpr -> BExpr -> [a] -> (Bool, [a])
-evalBBoolOperator op left right map = case op of
-    And  -> ((fst (evalBExpr left map)) && (fst (evalBExpr right map)), ((snd (evalBExpr left map)) ++ (snd (evalBExpr right map))))
-    Or  -> ((fst (evalBExpr left map)) || (fst (evalBExpr right map)), ((snd (evalBExpr left map)) ++ (snd (evalBExpr right map))))
 
-evalRBoolOperator :: RBinOp -> AExpr -> AExpr -> [a] -> (Bool, [a])
-evalRBoolOperator op left right map = case op of
-    Greater -> ((fst (evalAExpr left map)) > (fst (evalAExpr right map)), (snd (evalAExpr left map)) ++ (snd (evalAExpr right map)))    
-    Less -> ((fst (evalAExpr left map)) < (fst (evalAExpr right map)), (snd (evalAExpr left map)) ++ (snd (evalAExpr right map))) 
+    
+{-
+**** expressions booléennes ****
+-}    
 
+evalBExpr :: BExpr -> [(String,Integer)] -> (Bool,[(String,Integer)])
+evalBExpr e evalContext = case e of
+    BoolConst b -> (b,evalContext)
+    Not expr ->  do((not(fst(evalBExpr expr evalContext))),(snd (evalBExpr expr evalContext)))                
+    BBinary op left right -> evalBBoolOperator op left right evalContext
+    RBinary op left right -> evalRBoolOperator op left right evalContext
+
+evalBBoolOperator :: BBinOp -> BExpr -> BExpr -> [(String,Integer)] -> (Bool, [(String,Integer)])
+evalBBoolOperator op left right evalContext = case op of
+    And  -> ((fst (evalBExpr left evalContext)) && (fst (evalBExpr right evalContext)), ((snd (evalBExpr left evalContext)) ++ (snd (evalBExpr right evalContext))))
+    Or  -> ((fst (evalBExpr left evalContext)) || (fst (evalBExpr right evalContext)), ((snd (evalBExpr left evalContext)) ++ (snd (evalBExpr right evalContext))))
+
+evalRBoolOperator :: RBinOp -> AExpr -> AExpr -> [(String,Integer)] -> (Bool, [(String,Integer)])
+evalRBoolOperator op left right evalContext = case op of
+    Greater -> ((fst (evalAExpr left evalContext)) > (fst (evalAExpr right evalContext)), (snd (evalAExpr left evalContext)) ++ (snd (evalAExpr right evalContext)))    
+    Less -> ((fst (evalAExpr left evalContext)) < (fst (evalAExpr right evalContext)), (snd (evalAExpr left evalContext)) ++ (snd (evalAExpr right evalContext))) 
+
+{-
+**** expressions entières ****
+-}    
               
-evalAExpr :: AExpr -> [a] -> (Integer, [a])
-evalAExpr e context = case e of
-    IntConst i -> (i,context)
+evalAExpr :: AExpr -> [(String,Integer)] -> (Integer, [(String,Integer)])
+evalAExpr e evalContext = case e of
+    IntConst i -> (i,evalContext)
     Neg expr -> do
-        (fst (evalAExpr expr context) , snd(evalAExpr expr context))        
-        --
-        --(fst res,snd res) -- negate expr        -}
-    ABinary op left right -> (-42, context) -- do operation
-    Var name -> (-78, context) -- lookup value in context and return it 
+        ((-(fst (evalAExpr expr evalContext))) , evalContext)                
+    ABinary op left right -> ((evalAOperation op left right evalContext),evalContext) 
+    Var name -> (-78, evalContext) -- lookup value in evalContext and return it 
 
-
+evalAOperation :: ABinOp -> AExpr -> AExpr -> [(String,Integer)] -> Integer
+evalAOperation op left right evalContext = case op of
+    Add -> ((fst (evalAExpr left evalContext)) + (fst (evalAExpr right evalContext)))
+    _ -> -42
+--    Substract -> ((fst (evalAExpr left evalContext)) - (fst (evalAExpr right evalContext)))
+--    Multiply -> ((fst (evalAExpr left evalContext)) * (fst (evalAExpr right evalContext)))
+--    Divide -> ((fst (evalAExpr left evalContext)) / (fst (evalAExpr right evalContext)))

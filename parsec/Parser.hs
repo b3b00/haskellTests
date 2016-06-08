@@ -125,7 +125,7 @@ aOperators = [ [Prefix (reservedOp "-"   >> return (Neg             ))          
              , [Infix  (reservedOp "*"   >> return (ABinary Multiply)) AssocLeft,
                 Infix  (reservedOp "/"   >> return (ABinary Divide  )) AssocLeft]
              , [Infix  (reservedOp "+"   >> return (ABinary Add     )) AssocLeft,
-                Infix  (reservedOp "-"   >> return (ABinary Subtract)) AssocLeft]
+                Infix  (reservedOp "-"   >> return (ABinary Substract)) AssocLeft]
               ]
  
 bOperators = [ [Prefix (reservedOp "not" >> return (Not             ))          ]
