@@ -12,18 +12,46 @@ play stmt evalContext = do
 run :: Stmt -> IO()
 run stmt = do
     play stmt []
+    
+{-
+**** variable mapping
+-}    
+    
+getVariable :: String -> [(String,Integer)] -> Integer
+getVariable name evalContext = case lookup name evalContext of
+  Just n  -> n
+  Nothing -> 0 -- TODO : throw an error instead
+
+addOrReplace :: Eq k => k -> v -> [(k, v)] -> [(k, v)]
+addOrReplace key value assoc = (key,value):(filter ((key /=).fst) assoc)  
+  
+--setVariable  :: String -> Integer -> [(String,Integer)] -> [(String,Integer)]
+
+    
 
 {-
 **** statements ****
 -}        
 
+evalSeq :: [Stmt] -> [(String,Integer)] -> [(String,Integer)]
+evalSeq stmts evalContext = case stmts of 
+    [] -> evalContext
+    (stm:tail) -> evalSeq tail (evalStmt stm evalContext)
+    
+evalIfThenElse :: BExpr -> Stmt -> Stmt -> [(String,Integer)] -> [(String,Integer)]
+evalIfThenElse cond stmThen stmElse evalContext
+    | (fst (evalBExpr cond evalContext))==True = (evalStmt stmThen evalContext)
+    | otherwise = (evalStmt stmElse evalContext)
+    
 evalStmt :: Stmt -> [(String,Integer)] -> [(String,Integer)]
 evalStmt stm evalContext = case stm of
-    Assign var expr ->  (var, (fst (evalAExpr expr evalContext))):evalContext
-    {-Print expr -> do
-        v <- show (fst (evalAExpr expr evalContext))
-        putStrLn v
-        evalContext -}
+    Assign var expr ->  addOrReplace var (fst (evalAExpr expr evalContext)) evalContext
+    If cond thenStmt elseStmt -> evalIfThenElse cond thenStmt elseStmt evalContext
+    While cond stm -> evalContext
+    Seq stmts -> evalSeq stmts evalContext     
+    {-Print expr -> do 
+        putStrLn (show (fst (evalAExpr expr evalContext))) 
+        evalContext-}
 
     
 {-
@@ -46,15 +74,13 @@ evalRBoolOperator :: RBinOp -> AExpr -> AExpr -> [(String,Integer)] -> (Bool, [(
 evalRBoolOperator op left right evalContext = case op of
     Greater -> ((fst (evalAExpr left evalContext)) > (fst (evalAExpr right evalContext)), (snd (evalAExpr left evalContext)) ++ (snd (evalAExpr right evalContext)))    
     Less -> ((fst (evalAExpr left evalContext)) < (fst (evalAExpr right evalContext)), (snd (evalAExpr left evalContext)) ++ (snd (evalAExpr right evalContext))) 
+    Equals -> ((fst (evalAExpr left evalContext)) == (fst (evalAExpr right evalContext)), (snd (evalAExpr left evalContext)) ++ (snd (evalAExpr right evalContext))) 
 
 {-
 **** expressions entières ****
 -}    
 
-getVariable :: String -> [(String,Integer)] -> Integer
-getVariable name evalContext = case lookup name evalContext of
-  Just n  -> n
-  Nothing -> 0 -- TODO : throw an error instead
+
               
 evalAExpr :: AExpr -> [(String,Integer)] -> (Integer, [(String,Integer)])
 evalAExpr e evalContext = case e of
