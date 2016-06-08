@@ -13,7 +13,17 @@ run :: Stmt -> IO()
 run stmt = do
     play stmt []
 
+{-
+**** statements ****
+-}        
 
+evalStmt :: Stmt -> [(String,Integer)] -> [(String,Integer)]
+evalStmt stm evalContext = case stm of
+    Assign var expr ->  (var, (fst (evalAExpr expr evalContext))):evalContext
+    {-Print expr -> do
+        v <- show (fst (evalAExpr expr evalContext))
+        putStrLn v
+        evalContext -}
 
     
 {-
@@ -40,6 +50,11 @@ evalRBoolOperator op left right evalContext = case op of
 {-
 **** expressions entières ****
 -}    
+
+getVariable :: String -> [(String,Integer)] -> Integer
+getVariable name evalContext = case lookup name evalContext of
+  Just n  -> n
+  Nothing -> 0 -- TODO : throw an error instead
               
 evalAExpr :: AExpr -> [(String,Integer)] -> (Integer, [(String,Integer)])
 evalAExpr e evalContext = case e of
@@ -47,12 +62,11 @@ evalAExpr e evalContext = case e of
     Neg expr -> do
         ((-(fst (evalAExpr expr evalContext))) , evalContext)                
     ABinary op left right -> ((evalAOperation op left right evalContext),evalContext) 
-    Var name -> (-78, evalContext) -- lookup value in evalContext and return it 
+    Var name -> ((getVariable name evalContext), evalContext) -- lookup value in evalContext and return it 
 
 evalAOperation :: ABinOp -> AExpr -> AExpr -> [(String,Integer)] -> Integer
 evalAOperation op left right evalContext = case op of
     Add -> ((fst (evalAExpr left evalContext)) + (fst (evalAExpr right evalContext)))
-    _ -> -42
---    Substract -> ((fst (evalAExpr left evalContext)) - (fst (evalAExpr right evalContext)))
---    Multiply -> ((fst (evalAExpr left evalContext)) * (fst (evalAExpr right evalContext)))
---    Divide -> ((fst (evalAExpr left evalContext)) / (fst (evalAExpr right evalContext)))
+    Substract -> ((fst (evalAExpr left evalContext)) - (fst (evalAExpr right evalContext)))
+    Multiply -> ((fst (evalAExpr left evalContext)) * (fst (evalAExpr right evalContext)))
+    Divide -> ((fst (evalAExpr left evalContext)) `quot` (fst (evalAExpr right evalContext)))

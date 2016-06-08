@@ -26,3 +26,21 @@ Test-Suite boolExprTests
                        test-framework-hunit,
                        HUnit
   default-language:    Haskell2010  
+  
+Test-Suite intExprTests
+  type:                exitcode-stdio-1.0
+  main-is:             IntExprTests.hs
+  build-depends:       base,
+                       test-framework,
+                       test-framework-hunit,
+                       HUnit
+  default-language:    Haskell2010    
+  
+Test-Suite stmtTests
+  type:                exitcode-stdio-1.0
+  main-is:             StmtTests.hs
+  build-depends:       base,
+                       test-framework,
+                       test-framework-hunit,
+                       HUnit
+  default-language:    Haskell2010    
