@@ -26,24 +26,6 @@ variable = Var "toto"
 
 test5 = TestCase  $ (assertEqual "toto" (10) (fst (evalAExpr variable [("toto",10)])))
 
-{-
-
-notT = Not (BoolConst True) 
-
-test2 = TestCase  $ (assertEqual "not true" (False) (fst (evalBExpr notT [])))
-
-tOrf = BBinary Or (BoolConst True) (BoolConst False)
-
-test3 = TestCase  $ (assertEqual "true and true" (True) (fst (evalBExpr tOrf [])))
-
-
-greater = RBinary Greater (IntConst 1) (IntConst 2)
-
-test4 = TestCase  $ (assertEqual "1 > 2" (False) (fst (evalBExpr greater [])))
-
-less = RBinary Less (IntConst 1) (IntConst 2)
-
- test5 = TestCase  $ (assertEqual "1 < 2" (True) (fst(evalBExpr less []))) -}
 
 -- hUnitTestToTests: Adapt an existing HUnit test into a list of test-framework tests
 tests = hUnitTestToTests $ TestList [TestLabel "add test" test1, TestLabel "div test" test2, TestLabel "substract test" test3, TestLabel "multiplication test" test4, TestLabel "avraible test" test5]
