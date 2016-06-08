@@ -37,6 +37,12 @@ evalSeq :: [Stmt] -> [(String,Integer)] -> [(String,Integer)]
 evalSeq stmts evalContext = case stmts of 
     [] -> evalContext
     (stm:tail) -> evalSeq tail (evalStmt stm evalContext)
+
+evalWhile :: BExpr -> Stmt -> [(String,Integer)] -> [(String,Integer)]
+evalWhile cond stmt evalContext 
+    | (fst (evalBExpr cond evalContext))==False = evalContext
+    | (fst (evalBExpr cond evalContext))==True = evalWhile cond stmt (evalStmt stmt evalContext)
+    
     
 evalIfThenElse :: BExpr -> Stmt -> Stmt -> [(String,Integer)] -> [(String,Integer)]
 evalIfThenElse cond stmThen stmElse evalContext
@@ -47,8 +53,8 @@ evalStmt :: Stmt -> [(String,Integer)] -> [(String,Integer)]
 evalStmt stm evalContext = case stm of
     Assign var expr ->  addOrReplace var (fst (evalAExpr expr evalContext)) evalContext
     If cond thenStmt elseStmt -> evalIfThenElse cond thenStmt elseStmt evalContext
-    While cond stm -> evalContext
-    Seq stmts -> evalSeq stmts evalContext     
+    While cond stm -> evalWhile cond stm evalContext
+    Seq stmts -> evalSeq stmts evalContext         
     {-Print expr -> do 
         putStrLn (show (fst (evalAExpr expr evalContext))) 
         evalContext-}
