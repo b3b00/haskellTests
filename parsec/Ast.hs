@@ -9,9 +9,9 @@ data BExpr = BoolConst Bool
            | RBinary RBinOp AExpr AExpr
             deriving (Show)
 
-data BBinOp = And | Or | Eq deriving (Show)     
+data BBinOp = And | Or  deriving (Show)     
 
-data RBinOp = Greater | Less  deriving (Show)       
+data RBinOp = Greater | Less | Equals deriving (Show)       
 
 data AExpr = Var String
            | IntConst Integer

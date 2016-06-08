@@ -9,8 +9,6 @@ import Text.ParserCombinators.Parsec.Language
 import qualified Text.ParserCombinators.Parsec.Token as Token
 
 
-
-
 {-
    Lexer
 -}    
@@ -128,8 +126,7 @@ aOperators = [ [Prefix (reservedOp "-"   >> return (Neg             ))          
                 Infix  (reservedOp "-"   >> return (ABinary Substract)) AssocLeft]
               ]
  
-bOperators = [ [Prefix (reservedOp "not" >> return (Not             ))          ]
-             , [Infix (reservedOp "==" >> return (BBinary Eq        )) AssocLeft]
+bOperators = [ [Prefix (reservedOp "not" >> return (Not             ))          ]             
              , [Infix  (reservedOp "and" >> return (BBinary And     )) AssocLeft,
                 Infix  (reservedOp "or"  >> return (BBinary Or      )) AssocLeft]
              ]
@@ -151,7 +148,7 @@ rExpression =
  
 relation =   (reservedOp ">" >> return Greater)
          <|> (reservedOp "<" >> return Less)
-
+         <|> (reservedOp "==" >> return Equals)         
 
 {-
 	EntryPoint
