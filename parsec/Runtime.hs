@@ -2,6 +2,7 @@ module Runtime where
 import System.IO
 import Control.Monad
 import Ast
+import Assoc
 import Debug.Trace (trace)
 
 
@@ -19,15 +20,9 @@ run stmt = do
 **** variable mapping
 -}    
     
-getVariable :: String -> [(String,Integer)] -> Integer
-getVariable name evalContext = case lookup name evalContext of
-  Just n  -> n
-  Nothing -> 0 -- TODO : throw an error instead
 
-addOrReplace :: Eq k => k -> v -> [(k, v)] -> [(k, v)]
-addOrReplace key value assoc = (key,value):(filter ((key /=).fst) assoc)  
   
---setVariable  :: String -> Integer -> [(String,Integer)] -> [(String,Integer)]
+--setVariable  :: String ->     Integer -> [(String,    Integer)] -> [(String,    Integer)]
 
     
 
@@ -35,26 +30,26 @@ addOrReplace key value assoc = (key,value):(filter ((key /=).fst) assoc)
 **** statements ****
 -}        
 
-evalPrint :: Integer -> [(String,Integer)] -> [(String,Integer)]
-evalPrint msg evalContext =  trace ("PRINT :: "++show msg)  evalContext
+evalPrint ::     Integer -> [(String,    Integer)] -> [(String,    Integer)]
+evalPrint msg evalContext =  trace ("PR    Integer :: "++show msg)  evalContext
 
-evalSeq :: [Stmt] -> [(String,Integer)] -> [(String,Integer)]
+evalSeq :: [Stmt] -> [(String,    Integer)] -> [(String,    Integer)]
 evalSeq stmts evalContext = case stmts of 
     [] -> evalContext
     (stm:tail) -> evalSeq tail (evalStmt stm evalContext)
 
-evalWhile :: BExpr -> Stmt -> [(String,Integer)] -> [(String,Integer)]
+evalWhile :: BExpr -> Stmt -> [(String,    Integer)] -> [(String,    Integer)]
 evalWhile cond stmt evalContext 
     | (evalBExpr cond evalContext) == False = evalContext
     | otherwise = evalWhile cond stmt (evalStmt stmt evalContext)
     
     
-evalIfThenElse :: BExpr -> Stmt -> Stmt -> [(String,Integer)] -> [(String,Integer)]
+evalIfThenElse :: BExpr -> Stmt -> Stmt -> [(String,    Integer)] -> [(String,    Integer)]
 evalIfThenElse cond stmThen stmElse evalContext
     | (evalBExpr cond evalContext)==True = (evalStmt stmThen evalContext)
     | otherwise = (evalStmt stmElse evalContext)
     
-evalStmt :: Stmt -> [(String,Integer)] -> [(String,Integer)]
+evalStmt :: Stmt -> [(String,    Integer)] -> [(String,    Integer)]
 evalStmt stm evalContext = case stm of
     Assign var expr ->  addOrReplace var (evalAExpr expr evalContext) evalContext
     If cond thenStmt elseStmt -> evalIfThenElse cond thenStmt elseStmt evalContext
@@ -68,19 +63,19 @@ evalStmt stm evalContext = case stm of
 **** expressions booléennes ****
 -}    
 
-evalBExpr :: BExpr -> [(String,Integer)] -> Bool
+evalBExpr :: BExpr -> [(String,    Integer)] -> Bool
 evalBExpr e evalContext = case e of
     BoolConst b -> b
     Not expr ->  not(evalBExpr expr evalContext)
     BBinary op left right -> evalBBoolOperator op left right evalContext
     RBinary op left right -> evalRBoolOperator op left right evalContext
 
-evalBBoolOperator :: BBinOp -> BExpr -> BExpr -> [(String,Integer)] -> Bool
+evalBBoolOperator :: BBinOp -> BExpr -> BExpr -> [(String,    Integer)] -> Bool
 evalBBoolOperator op left right evalContext = case op of
     And  -> (evalBExpr left evalContext) && (evalBExpr right evalContext)
     Or  -> (evalBExpr left evalContext) || (evalBExpr right evalContext)
 
-evalRBoolOperator :: RBinOp -> AExpr -> AExpr -> [(String,Integer)] -> Bool
+evalRBoolOperator :: RBinOp -> AExpr -> AExpr -> [(String,    Integer)] -> Bool
 evalRBoolOperator op left right evalContext = case op of
     Greater -> (evalAExpr left evalContext) > (evalAExpr right evalContext)
     Less -> (evalAExpr left evalContext) < (evalAExpr right evalContext)
@@ -92,14 +87,14 @@ evalRBoolOperator op left right evalContext = case op of
 
 
               
-evalAExpr :: AExpr -> [(String,Integer)] -> Integer
+evalAExpr :: AExpr -> [(String,    Integer)] ->     Integer
 evalAExpr e evalContext = case e of
     IntConst i -> i
     Neg expr -> -(evalAExpr expr evalContext)
     ABinary op left right -> (evalAOperation op left right evalContext)
     Var name -> (getVariable name evalContext)
 
-evalAOperation :: ABinOp -> AExpr -> AExpr -> [(String,Integer)] -> Integer
+evalAOperation :: ABinOp -> AExpr -> AExpr -> [(String,    Integer)] ->     Integer
 evalAOperation op left right evalContext = case op of
     Add -> (evalAExpr left evalContext) + (evalAExpr right evalContext)
     Substract -> (evalAExpr left evalContext) - (evalAExpr right evalContext)

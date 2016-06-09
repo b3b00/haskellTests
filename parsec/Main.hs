@@ -1,10 +1,5 @@
 module Main where
 
-import Parser
-import Ast
-import Runtime
-import Compiler
-
 import System.Exit
 import System.Environment   
 import Data.List  
@@ -14,6 +9,13 @@ import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Expr
 import Text.ParserCombinators.Parsec.Language
 import qualified Text.ParserCombinators.Parsec.Token as Token
+
+
+import Parser
+import Ast
+import Runtime
+import Compiler
+import Machine
 
 
 
@@ -27,7 +29,7 @@ import qualified Text.ParserCombinators.Parsec.Token as Token
 action :: String -> Stmt -> IO()
 action act ast = case act of 
     "-run" -> (run ast)
-    "-compile" -> putStrLn (show (compileAst ast))
+    "-compile" -> putStrLn (show (compileAst ast (Machine [] [] [] []) ))
     _ -> putStrLn ("unknwon action ["++act++"]")
 
 main = do

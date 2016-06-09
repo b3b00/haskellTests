@@ -45,3 +45,21 @@ Test-Suite stmtTests
                        test-framework-hunit,
                        HUnit
   default-language:    Haskell2010    
+
+Test-Suite stackTests
+  type:                exitcode-stdio-1.0
+  main-is:             StackTests.hs
+  build-depends:       base,
+                       test-framework,
+                       test-framework-hunit,
+                       HUnit
+  default-language:    Haskell2010     
+
+Test-Suite MachineTests
+  type:                exitcode-stdio-1.0
+  main-is:             MachineTests.hs
+  build-depends:       base,
+                       test-framework,
+                       test-framework-hunit,
+                       HUnit
+  default-language:    Haskell2010     
