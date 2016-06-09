@@ -3,6 +3,7 @@ module Main where
 import Parser
 import Ast
 import Runtime
+import Compiler
 
 import System.Exit
 import System.Environment   
@@ -16,15 +17,23 @@ import qualified Text.ParserCombinators.Parsec.Token as Token
 
 
 
+
 {-
     ******* MAIN *******
 -}
 
 --
+
+action :: String -> Stmt -> IO()
+action act ast = case act of 
+    "-run" -> (run ast)
+    "-compile" -> putStrLn (show (compileAst ast))
+    _ -> putStrLn ("unknwon action ["++act++"]")
+
 main = do
-    ast <- parseFile "test.prog"
-    exitCode <- run ast
-    putStrLn (show (exitCode)) 
+    args <- getArgs    
+    (parseFile (args!!1)) >>= action (args !! 0) 
+    
 
 tac  = unlines . reverse . lines
 

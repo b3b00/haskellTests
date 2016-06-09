@@ -149,6 +149,8 @@ rExpression =
 relation =   (reservedOp ">" >> return Greater)
          <|> (reservedOp "<" >> return Less)
          <|> (reservedOp "==" >> return Equals)         
+         
+
 
 {-
 	EntryPoint
@@ -159,6 +161,8 @@ parseString str =
   case parse whileParser "" str of
     Left e  -> error $ show e
     Right r -> r
+    
+    
 parseFile :: String -> IO Stmt
 parseFile file =
   do program  <- readFile file

@@ -1,8 +1,16 @@
-(
+( 
+i := 0;
+while (i < 11) do
+    (print i;
+    i := i + 1 )
+)
+
+
+/*(
 	(
 		a:= 1 + 1;
 
-		if true then
+		if (a > 1) then
 			(a:=42)
 		else
 			(a := 24);	
@@ -12,3 +20,4 @@
 
 	)
 )
+*/
