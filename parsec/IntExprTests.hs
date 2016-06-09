@@ -8,23 +8,23 @@ import Runtime
 
 twoPlusTwo = ABinary Add (IntConst 2) (IntConst 2)
 
-test1 = TestCase  $ (assertEqual "2+2" (4) (fst (evalAExpr twoPlusTwo [])))
+test1 = TestCase  $ (assertEqual "2+2" (4) (evalAExpr twoPlusTwo []))
 
 fiveDivTwo = ABinary Divide (IntConst 5) (IntConst 2)
 
-test2 = TestCase  $ (assertEqual "5/2" (2) (fst (evalAExpr fiveDivTwo [])))
+test2 = TestCase  $ (assertEqual "5/2" (2) (evalAExpr fiveDivTwo []))
 
 fiveMinusTwo = ABinary Substract (IntConst 5) (IntConst 2)
 
-test3 = TestCase  $ (assertEqual "5-2" (3) (fst (evalAExpr fiveMinusTwo [])))
+test3 = TestCase  $ (assertEqual "5-2" (3) (evalAExpr fiveMinusTwo []))
 
 fiveTimesTwo = ABinary Multiply (IntConst 5) (IntConst 2)
 
-test4 = TestCase  $ (assertEqual "5*2" (10) (fst (evalAExpr fiveTimesTwo [])))
+test4 = TestCase  $ (assertEqual "5*2" (10) (evalAExpr fiveTimesTwo []))
 
 variable = Var "toto"
 
-test5 = TestCase  $ (assertEqual "toto" (10) (fst (evalAExpr variable [("toto",10)])))
+test5 = TestCase  $ (assertEqual "toto" (10) (evalAExpr variable [("toto",10)]))
 
 
 -- hUnitTestToTests: Adapt an existing HUnit test into a list of test-framework tests

@@ -2,12 +2,14 @@ module Runtime where
 import System.IO
 import Control.Monad
 import Ast
-import Debug.Trace
+import Debug.Trace (trace)
 
 
 --play :: Stmt -> List -> IO()
-play stmt evalContext = do
-    putStrLn(show(stmt))
+play stmt evalContext = let    
+    result = evalStmt stmt []
+    in
+    putStrLn (show result)
 
 run :: Stmt -> IO()
 run stmt = do
@@ -33,6 +35,9 @@ addOrReplace key value assoc = (key,value):(filter ((key /=).fst) assoc)
 **** statements ****
 -}        
 
+evalPrint :: Integer -> [(String,Integer)] -> [(String,Integer)]
+evalPrint msg evalContext =  trace ("PRINT :: "++show msg)  evalContext
+
 evalSeq :: [Stmt] -> [(String,Integer)] -> [(String,Integer)]
 evalSeq stmts evalContext = case stmts of 
     [] -> evalContext
@@ -40,47 +45,46 @@ evalSeq stmts evalContext = case stmts of
 
 evalWhile :: BExpr -> Stmt -> [(String,Integer)] -> [(String,Integer)]
 evalWhile cond stmt evalContext 
-    | (fst (evalBExpr cond evalContext))==False = evalContext
-    | (fst (evalBExpr cond evalContext))==True = evalWhile cond stmt (evalStmt stmt evalContext)
+    | (evalBExpr cond evalContext) == False = evalContext
+    | otherwise = evalWhile cond stmt (evalStmt stmt evalContext)
     
     
 evalIfThenElse :: BExpr -> Stmt -> Stmt -> [(String,Integer)] -> [(String,Integer)]
 evalIfThenElse cond stmThen stmElse evalContext
-    | (fst (evalBExpr cond evalContext))==True = (evalStmt stmThen evalContext)
+    | (evalBExpr cond evalContext)==True = (evalStmt stmThen evalContext)
     | otherwise = (evalStmt stmElse evalContext)
     
 evalStmt :: Stmt -> [(String,Integer)] -> [(String,Integer)]
 evalStmt stm evalContext = case stm of
-    Assign var expr ->  addOrReplace var (fst (evalAExpr expr evalContext)) evalContext
+    Assign var expr ->  addOrReplace var (evalAExpr expr evalContext) evalContext
     If cond thenStmt elseStmt -> evalIfThenElse cond thenStmt elseStmt evalContext
     While cond stm -> evalWhile cond stm evalContext
     Seq stmts -> evalSeq stmts evalContext         
-    {-Print expr -> do 
-        putStrLn (show (fst (evalAExpr expr evalContext))) 
-        evalContext-}
+    Print expr -> let v = (evalAExpr expr evalContext) in        
+        evalPrint (v) evalContext
 
     
 {-
 **** expressions booléennes ****
 -}    
 
-evalBExpr :: BExpr -> [(String,Integer)] -> (Bool,[(String,Integer)])
+evalBExpr :: BExpr -> [(String,Integer)] -> Bool
 evalBExpr e evalContext = case e of
-    BoolConst b -> (b,evalContext)
-    Not expr ->  do((not(fst(evalBExpr expr evalContext))),(snd (evalBExpr expr evalContext)))                
+    BoolConst b -> b
+    Not expr ->  not(evalBExpr expr evalContext)
     BBinary op left right -> evalBBoolOperator op left right evalContext
     RBinary op left right -> evalRBoolOperator op left right evalContext
 
-evalBBoolOperator :: BBinOp -> BExpr -> BExpr -> [(String,Integer)] -> (Bool, [(String,Integer)])
+evalBBoolOperator :: BBinOp -> BExpr -> BExpr -> [(String,Integer)] -> Bool
 evalBBoolOperator op left right evalContext = case op of
-    And  -> ((fst (evalBExpr left evalContext)) && (fst (evalBExpr right evalContext)), ((snd (evalBExpr left evalContext)) ++ (snd (evalBExpr right evalContext))))
-    Or  -> ((fst (evalBExpr left evalContext)) || (fst (evalBExpr right evalContext)), ((snd (evalBExpr left evalContext)) ++ (snd (evalBExpr right evalContext))))
+    And  -> (evalBExpr left evalContext) && (evalBExpr right evalContext)
+    Or  -> (evalBExpr left evalContext) || (evalBExpr right evalContext)
 
-evalRBoolOperator :: RBinOp -> AExpr -> AExpr -> [(String,Integer)] -> (Bool, [(String,Integer)])
+evalRBoolOperator :: RBinOp -> AExpr -> AExpr -> [(String,Integer)] -> Bool
 evalRBoolOperator op left right evalContext = case op of
-    Greater -> ((fst (evalAExpr left evalContext)) > (fst (evalAExpr right evalContext)), (snd (evalAExpr left evalContext)) ++ (snd (evalAExpr right evalContext)))    
-    Less -> ((fst (evalAExpr left evalContext)) < (fst (evalAExpr right evalContext)), (snd (evalAExpr left evalContext)) ++ (snd (evalAExpr right evalContext))) 
-    Equals -> ((fst (evalAExpr left evalContext)) == (fst (evalAExpr right evalContext)), (snd (evalAExpr left evalContext)) ++ (snd (evalAExpr right evalContext))) 
+    Greater -> (evalAExpr left evalContext) > (evalAExpr right evalContext)
+    Less -> (evalAExpr left evalContext) < (evalAExpr right evalContext)
+    Equals -> (evalAExpr left evalContext) == (evalAExpr right evalContext)
 
 {-
 **** expressions entières ****
@@ -88,17 +92,16 @@ evalRBoolOperator op left right evalContext = case op of
 
 
               
-evalAExpr :: AExpr -> [(String,Integer)] -> (Integer, [(String,Integer)])
+evalAExpr :: AExpr -> [(String,Integer)] -> Integer
 evalAExpr e evalContext = case e of
-    IntConst i -> (i,evalContext)
-    Neg expr -> do
-        ((-(fst (evalAExpr expr evalContext))) , evalContext)                
-    ABinary op left right -> ((evalAOperation op left right evalContext),evalContext) 
-    Var name -> ((getVariable name evalContext), evalContext) -- lookup value in evalContext and return it 
+    IntConst i -> i
+    Neg expr -> -(evalAExpr expr evalContext)
+    ABinary op left right -> (evalAOperation op left right evalContext)
+    Var name -> (getVariable name evalContext)
 
 evalAOperation :: ABinOp -> AExpr -> AExpr -> [(String,Integer)] -> Integer
 evalAOperation op left right evalContext = case op of
-    Add -> ((fst (evalAExpr left evalContext)) + (fst (evalAExpr right evalContext)))
-    Substract -> ((fst (evalAExpr left evalContext)) - (fst (evalAExpr right evalContext)))
-    Multiply -> ((fst (evalAExpr left evalContext)) * (fst (evalAExpr right evalContext)))
-    Divide -> ((fst (evalAExpr left evalContext)) `quot` (fst (evalAExpr right evalContext)))
+    Add -> (evalAExpr left evalContext) + (evalAExpr right evalContext)
+    Substract -> (evalAExpr left evalContext) - (evalAExpr right evalContext)
+    Multiply -> (evalAExpr left evalContext) * (evalAExpr right evalContext)
+    Divide -> (evalAExpr left evalContext) `quot` (evalAExpr right evalContext)
