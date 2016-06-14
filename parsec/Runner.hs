@@ -44,14 +44,8 @@ movOp machine ip =
                 let addr = trace ("mov a val::"++(show value)) (bytecode machine) !! (ip+1) in
                     let newheap = trace ("mov h "++(show value)++" -> @"++(show addr)) setInHeap (addr-1) value (heap machine) in
                         let newStack = (snd popped) in
-                        --trace ("mov "++(show value)++" @ "++(show addr)) (ip+2,Machine (bytecode machine) newStack newheap (heapAddresses machine))
                             (ip+2,Machine (bytecode machine) newStack newheap (heapAddresses machine))
 
-{-
-movOp machine ip = 
-    let  debug = trace "\ntu vas la bouger ta graisse !!!" 1 in          
-        trace "mouarf" (ip+2,machine)                            
--}
 
 
 pushOp :: Machine -> Int -> (Int,Machine)
