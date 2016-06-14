@@ -51,7 +51,7 @@ evalIfThenElse cond stmThen stmElse evalContext
     
 evalStmt :: Stmt -> [(String,    Integer)] -> [(String,    Integer)]
 evalStmt stm evalContext = case stm of
-    Assign var expr ->  addOrReplace var (evalAExpr expr evalContext) evalContext
+    Assign var expr ->  addOrReplaceInteger var (evalAExpr expr evalContext) evalContext
     If cond thenStmt elseStmt -> evalIfThenElse cond thenStmt elseStmt evalContext
     While cond stm -> evalWhile cond stm evalContext
     Seq stmts -> evalSeq stmts evalContext         
@@ -92,7 +92,7 @@ evalAExpr e evalContext = case e of
     IntConst i -> i
     Neg expr -> -(evalAExpr expr evalContext)
     ABinary op left right -> (evalAOperation op left right evalContext)
-    Var name -> (getVariable name evalContext)
+    Var name -> (getVariableInteger name evalContext)
 
 evalAOperation :: ABinOp -> AExpr -> AExpr -> [(String,    Integer)] ->     Integer
 evalAOperation op left right evalContext = case op of

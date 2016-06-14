@@ -44,7 +44,7 @@ compileAst stmt machine = case stmt of
 compileAExpr :: AExpr ->  Machine -> Machine        
 compileAExpr expr machine = case expr of
     IntConst i -> Machine (bytecode machine++[1, (length( heap machine)) + 1]) (stack machine) (heap machine++[IntVal i])  (heapAddresses machine)
-    Var n -> Machine (bytecode machine++[1,(getVariable n (heapAddresses machine))]) (stack machine) (heap machine) (addOrReplace n  (length (heap machine)) (heapAddresses machine))
+    Var n -> Machine (bytecode machine++[1,(getVariableInt n (heapAddresses machine))]) (stack machine) (heap machine) (addOrReplaceInt n  (length (heap machine)) (heapAddresses machine))
 
 compileBExpr :: BExpr ->  Machine -> Machine        
 compileBExpr expr machine = case expr of
@@ -52,4 +52,4 @@ compileBExpr expr machine = case expr of
 
 compileStmt :: Stmt -> Machine -> Machine
 compileStmt stmt machine = case stmt of 
-    Assign name expr -> Machine (bytecode (compileAExpr expr machine)++[3, (length( heap (compileAExpr expr machine))) + 1]) (stack (compileAExpr expr machine)) (heap (compileAExpr expr machine)++[NullVal]) (addOrReplace name ( (length (heap (compileAExpr expr machine)))) (heapAddresses (compileAExpr expr machine) )) -- on ajoute NulVal dans le heap juste pour réserver la place
+    Assign name expr -> Machine (bytecode (compileAExpr expr machine)++[3, (length( heap (compileAExpr expr machine))) + 1]) (stack (compileAExpr expr machine)) (heap (compileAExpr expr machine)++[NullVal]) (addOrReplaceInt name ( (length (heap (compileAExpr expr machine)))) (heapAddresses (compileAExpr expr machine) )) -- on ajoute NulVal dans le heap juste pour réserver la place
