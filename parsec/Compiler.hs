@@ -16,7 +16,7 @@ todo : define bytecode / assembly
 4   ADD  add the two topmost values and push result 
 5   SUB  substract the two topmost values and push result
 6   MUL  multiply the two topmost values and push result
-7   MUL  multiply the two topmost values and push result
+7   DIV  divide the two topmost values and push result
 8   EQ  push true if two top values are equals
 9   GT  push true if n-1 > n
 10  LT  push true if n-1 < n
@@ -45,6 +45,34 @@ compileAExpr :: AExpr ->  Machine -> Machine
 compileAExpr expr machine = case expr of
     IntConst i -> Machine (bytecode machine++[1, (length( heap machine)) + 1]) (stack machine) (heap machine++[IntVal i])  (heapAddresses machine)
     Var n -> Machine (bytecode machine++[1,(getVariableInt n (heapAddresses machine))]) (stack machine) (heap machine) (addOrReplaceInt n  (length (heap machine)) (heapAddresses machine))
+    ABinary op left right -> compileAbinary expr machine
+
+aBinOpOpCode :: ABinOp -> Int
+aBinOpOpCode op = case op of
+    Add -> 4
+    Substract -> 5
+    Multiply -> 6
+    Divide -> 7
+ 
+
+
+compileAbinary :: AExpr -> Machine -> Machine -- AExpr is a ABinary
+compileAbinary expr machine = case expr of 
+    ABinary op left right -> 
+        let leftMachine = compileAExpr left machine in          -- 1: compile left
+            let rightMachine = compileAExpr right leftMachine in    -- 2: compile right
+                (Machine ((bytecode rightMachine)++[(aBinOpOpCode op)]) (stack rightMachine) (heap rightMachine) (heapAddresses rightMachine))
+    otherwise -> error "incorrect execution path !"
+
+
+-- 2: compile right
+-- 3: add aBinOpOpCode op in bytecode list
+
+
+
+
+
+    
 
 compileBExpr :: BExpr ->  Machine -> Machine        
 compileBExpr expr machine = case expr of

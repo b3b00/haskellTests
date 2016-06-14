@@ -8,14 +8,31 @@ import Runner
 import Debug.Trace (trace)
 
 
-main =     
+testCompileAndRun1 ::  IO ()
+testCompileAndRun1 = 
     let initial = (trace "compilation ...") (compileStmt (Assign "toto" (IntConst 42)) (Machine [] [] [] [])) in
         let final =  (trace ("running :: "++(show initial))) runMachine 0 initial in 
         do
             putStrLn "done."
             putStrLn $ show final
-    --putStrLn (show (compileStmt (Assign "toto" (IntConst 42)) (Machine [] [] [] [])))
-    --putStrLn (show (compileAExpr (IntConst 1) (Machine [] [] [] [])))
-    --putStrLn (show (compileBExpr (BoolConst False) (Machine [] [] [] [])))
-    --putStrLn (show (compileStmt (Assign "toto" (IntConst 42)) (Machine [] [] [] [])))
+
+
+
+testCompileSimpleAssign :: IO()
+testCompileSimpleAssign = putStrLn (show (compileStmt (Assign "toto" (IntConst 42)) (Machine [] [] [] [])))
+
+testCompileIntConst :: IO()
+testCompileIntConst = putStrLn (show (compileAExpr (IntConst 1) (Machine [] [] [] [])))
+
+testCompileIntBinary :: IO()
+testCompileIntBinary = putStrLn (show (compileAExpr (ABinary Add (IntConst 2) (IntConst 1)) (Machine [] [] [] [])))
+
+testCompileBoolConst :: IO()
+testCompileBoolConst = putStrLn (show (compileBExpr (BoolConst False) (Machine [] [] [] [])))
+
+
+
+main =     
+    testCompileIntBinary
+    
     
