@@ -43,7 +43,7 @@ compileAst stmt machine = case stmt of
 
 compileAExpr :: AExpr ->  Machine -> Machine        
 compileAExpr expr machine = case expr of
-    IntConst i -> Machine (bytecode machine++[1, (length( heap machine)) + 1]) (stack machine) (heap machine++[IntVal i])  (heapAddresses machine)
+    IntConst i -> Machine (bytecode machine++[1, (length( heap machine)) + 1]) (stack machine) (heap machine++[IntVal (fromIntegral i)])  (heapAddresses machine)
     Var n -> Machine (bytecode machine++[1,(getVariableInt n (heapAddresses machine))]) (stack machine) (heap machine) (addOrReplaceInt n  (length (heap machine)) (heapAddresses machine))
     ABinary op left right -> compileAbinary expr machine
 
