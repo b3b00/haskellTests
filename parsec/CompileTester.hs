@@ -28,14 +28,23 @@ testCompileAndRunAssignBinary =
 testCompileSimpleAssign :: IO()
 testCompileSimpleAssign = putStrLn (show (compileStmt (Assign "toto" (IntConst 42)) (Machine [] [] [] [])))
 
+-- ********************************* 
+
 testCompileIntConst :: IO()
 testCompileIntConst = putStrLn (show (compileAExpr (IntConst 1) (Machine [] [] [] [])))
 
 testCompileIntBinary :: IO()
 testCompileIntBinary = putStrLn (show (compileAExpr (ABinary Add (IntConst 2) (IntConst 1)) (Machine [] [] [] [])))
 
+-- ********************************* 
+
 testCompileBoolConst :: IO()
 testCompileBoolConst = putStrLn (show (compileBExpr (BoolConst False) (Machine [] [] [] [])))
+
+testCompileBoolOp :: IO()
+testCompileBoolOp = putStrLn (show (compileBExpr (BBinary And (BoolConst False) (BoolConst True)) (Machine [] [] [] [])))
+
+-- ********************************* 
 
 testCompileAndRunAdd :: IO()
 testCompileAndRunAdd = 
@@ -44,7 +53,9 @@ testCompileAndRunAdd =
             putStrLn ("evaluation result :: "++(show eval))
 
 
+
+
 main =     
-    testCompileAndRunAssignBinary
+    testCompileBoolOp
     
     
