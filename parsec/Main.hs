@@ -29,7 +29,7 @@ import Machine
 action :: String -> Stmt -> IO()
 action act ast = case act of 
     "-run" -> (run ast)
-    "-compile" -> putStrLn (show (compileAst ast (Machine [] [] [] []) ))
+    "-compile" -> putStrLn (show (compileAst ast (Machine 0 [] [] [] []) ))
     _ -> putStrLn ("unknwon action ["++act++"]")
 
 main = do

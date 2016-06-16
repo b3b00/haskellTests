@@ -13,8 +13,15 @@ une machine est consitutée de
 -}
 
 data Machine = Machine {
-    bytecode :: [Int]
+    pointer :: Int
+    , bytecode :: [Int]
     , stack :: [StackValue]
     , heap :: [StackValue]
     , heapAddresses :: [(String,Int)]
 } deriving (Show, Eq)
+
+opCode :: Machine -> Int
+opCode machine = (bytecode machine) !! (pointer machine)
+
+opCodeIn :: Machine -> [Int] -> Bool 
+opCodeIn machine codes = elem (opCode machine) codes
