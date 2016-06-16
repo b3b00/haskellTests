@@ -5,29 +5,49 @@ import Stack
 import Compiler
 import Machine
 import Runner
+import Parser
 import Debug.Trace (trace)
 
 
-testCompileAndRun1 ::  IO ()
-testCompileAndRun1 = 
-    let initial = (trace "compilation ...") (compileStmt (Assign "toto" (IntConst 42)) (Machine 0 [] [] [] [])) in
+testCompileAndRunInt ::  IO ()
+testCompileAndRunInt = 
+    let initial = (trace "compilation ...") (compileStmt (AssignA "toto" (IntConst 42)) (Machine 0 [] [] [] [])) in
         let final =  (trace ("running :: "++(show initial))) runMachine initial in 
         do
             putStrLn "done."
             putStrLn $ show final
 
-testCompileAndRunAssignBinary ::  IO ()
-testCompileAndRunAssignBinary = 
-    let initial = (trace "compilation assign binary op ...") (compileStmt (Assign "toto" (ABinary Substract (IntConst 2) (IntConst 1))) (Machine 0 [] [] [] [])) in
-        let final =  (trace ("running :: "++(show initial))) runMachine initial in 
+testCompileAndRunAssignIntBinary ::  IO ()
+testCompileAndRunAssignIntBinary = 
+    let ast = parseString "( toto := 2 - 1; skip )" in
+    let initial = trace ("compilation assign binary op ... of "++(show ast)) (compileStmt ast (Machine 0 [] [] [] [])) in
+        let final = trace ("running :: "++(show initial)) runMachine initial in 
         do
             putStrLn "done."
             putStrLn $ show final
+
+testCompileAndRunAddInt :: IO()
+testCompileAndRunAddInt = 
+    let ast = (compileAExpr (ABinary Add (IntConst 30) (IntConst 12)) (Machine 0 [] [] [] [])) in
+        let eval =  runMachine ast in
+            putStrLn ("evaluation result :: "++(show eval ))            
+
+testCompileAndRunAndBool :: IO()
+testCompileAndRunAndBool = 
+    let ast = (compileBExpr (BBinary And (BoolConst False) (BoolConst True)) (Machine 0 [] [] [] [])) in
+        let eval =  runMachine ast in
+            putStrLn ("evaluation result :: "++(show eval ))                 
+
+testCompileAndRunAndAssignBool :: IO()
+testCompileAndRunAndAssignBool = 
+    let ast = (compileStmt (AssignB "toto" (BBinary And (BoolConst False) (BoolConst True))) (Machine 0 [] [] [] [])) in
+        let eval =  runMachine ast in
+            putStrLn ("evaluation result :: "++(show eval ))       
 
 -- *********************************
 
 testCompileSimpleAssign :: IO()
-testCompileSimpleAssign = putStrLn (show (compileStmt (Assign "toto" (IntConst 42)) (Machine 0 [] [] [] [])))
+testCompileSimpleAssign = putStrLn (show (compileStmt (AssignA "toto" (IntConst 42)) (Machine 0 [] [] [] [])))
 
 -- ********************************* 
 
@@ -47,13 +67,9 @@ testCompileBoolOp = putStrLn (show (compileBExpr (BBinary And (BoolConst False) 
 
 -- ********************************* 
 
-testCompileAndRunAdd :: IO()
-testCompileAndRunAdd = 
-    let ast = (compileAExpr (ABinary Add (IntConst 30) (IntConst 12)) (Machine 0 [] [] [] [])) in
-        let eval =  runMachine ast in
-            putStrLn ("evaluation result :: "++(show eval ))
+
 
 main =     
-    testCompileBoolOp
+    testCompileAndRunAssignIntBinary
     
     

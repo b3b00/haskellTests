@@ -36,13 +36,7 @@ todo : define bytecode / assembly
 
 
 compileAst :: Stmt -> Machine -> Machine
-compileAst stmt machine = case stmt of 
-    Seq stmts -> trace "compStm seq" Machine 0 [0,1,2,3,4,5,6] [] [] []
-    While cond stm -> trace "compstm wwhile" Machine 0 [6,7,8] [] [] []
-    If cond thenStmt elseStmt -> trace "compstm if" Machine 0 [9,10,11,12] [] [] []
-    Print expr -> trace "compstm print" Machine 0 [13] [] [] []
-    Skip -> trace "compstm skip" Machine 0 [] [] [] []
-    _ -> trace "compstm ont know" Machine 0 [] [] [] []
+compileAst stmt machine = compileStmt stmt machine
 
 
 compileAExpr :: AExpr ->  Machine -> Machine        
@@ -106,6 +100,11 @@ compileBExpr expr machine = case expr of
     BBinary op e1 e2 -> compileBBinary expr machine
     RBinary rop e1 e2 -> compileRBinary rop e1 e2 machine 
 
+compileSequence :: [Stmt] -> Machine -> Machine
+compileSequence [] machine = machine
+compileSequence (h:t) machine = compileSequence t (compileStmt h machine)      
+
+
 compileStmt :: Stmt -> Machine -> Machine
 compileStmt stmt machine = case stmt of 
     AssignA name expr -> let compiledExpr = compileAExpr expr machine in
@@ -113,3 +112,4 @@ compileStmt stmt machine = case stmt of
     AssignB name expr -> let compiledExpr = compileBExpr expr machine in
         Machine 0 (bytecode (compiledExpr)++[3, (length( heap (compiledExpr))) + 1]) (stack (compiledExpr)) (heap (compiledExpr)++[NullVal]) (addOrReplaceInt name ( (length (heap (compiledExpr)))) (heapAddresses (compiledExpr) )) -- on ajoute NulVal dans le heap juste pour réserver la place
     Skip -> machine       
+    Seq stmts -> compileSequence stmts machine

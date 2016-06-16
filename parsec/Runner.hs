@@ -37,7 +37,6 @@ setInHeap :: Int -> StackValue -> [StackValue] -> [StackValue]
 setInHeap address value heap = trace ("replaceNth "++(show address)++" "++(show value)++" "++(show heap)) replaceNth address value heap
 
 
-
 {- ********************************
     
     INT OPERATIONS
