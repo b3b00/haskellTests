@@ -51,12 +51,14 @@ evalIfThenElse cond stmThen stmElse evalContext
     
 evalStmt :: Stmt -> [(String,    Integer)] -> [(String,    Integer)]
 evalStmt stm evalContext = case stm of
-    Assign var expr ->  addOrReplaceInteger var (evalAExpr expr evalContext) evalContext
+    AssignA var expr ->  addOrReplaceInteger var (evalAExpr expr evalContext) evalContext
+    --AssignB var expr ->  addOrReplaceInteger var (evalBExpr expr evalContext) evalContext
     If cond thenStmt elseStmt -> evalIfThenElse cond thenStmt elseStmt evalContext
     While cond stm -> evalWhile cond stm evalContext
     Seq stmts -> evalSeq stmts evalContext         
     Print expr -> let v = (evalAExpr expr evalContext) in        
         evalPrint (v) evalContext
+    Skip -> evalContext
 
     
 {-

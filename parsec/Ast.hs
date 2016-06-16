@@ -26,7 +26,8 @@ data ABinOp = Add
               deriving (Show)
 
 data Stmt = Seq [Stmt]
-          | Assign String AExpr
+          | AssignA String AExpr
+          | AssignB String BExpr
           | If BExpr Stmt Stmt
           | While BExpr Stmt
           | Print AExpr

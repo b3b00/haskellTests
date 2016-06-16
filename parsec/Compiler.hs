@@ -108,4 +108,8 @@ compileBExpr expr machine = case expr of
 
 compileStmt :: Stmt -> Machine -> Machine
 compileStmt stmt machine = case stmt of 
-    Assign name expr -> Machine 0 (bytecode (compileAExpr expr machine)++[3, (length( heap (compileAExpr expr machine))) + 1]) (stack (compileAExpr expr machine)) (heap (compileAExpr expr machine)++[NullVal]) (addOrReplaceInt name ( (length (heap (compileAExpr expr machine)))) (heapAddresses (compileAExpr expr machine) )) -- on ajoute NulVal dans le heap juste pour réserver la place
+    AssignA name expr -> let compiledExpr = compileAExpr expr machine in
+        Machine 0 (bytecode (compiledExpr)++[3, (length( heap (compiledExpr))) + 1]) (stack (compiledExpr)) (heap (compiledExpr)++[NullVal]) (addOrReplaceInt name ( (length (heap (compiledExpr)))) (heapAddresses (compiledExpr) )) -- on ajoute NulVal dans le heap juste pour réserver la place
+    AssignB name expr -> let compiledExpr = compileBExpr expr machine in
+        Machine 0 (bytecode (compiledExpr)++[3, (length( heap (compiledExpr))) + 1]) (stack (compiledExpr)) (heap (compiledExpr)++[NullVal]) (addOrReplaceInt name ( (length (heap (compiledExpr)))) (heapAddresses (compiledExpr) )) -- on ajoute NulVal dans le heap juste pour réserver la place
+    Skip -> machine       

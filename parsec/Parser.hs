@@ -73,7 +73,8 @@ statement' :: Parser Stmt
 statement' =   ifStmt
            <|> whileStmt
            <|> skipStmt
-           <|> assignStmt
+           <|> assignIntStmt
+           <|> assignBoolStmt
            <|> printStmt
 
 printStmt :: Parser Stmt
@@ -100,12 +101,19 @@ whileStmt =
      stmt <- statement
      return $ While cond stmt
 
-assignStmt :: Parser Stmt
-assignStmt =
+assignIntStmt :: Parser Stmt
+assignIntStmt =
   do var  <- identifier
      reservedOp ":="
      expr <- aExpression
-     return $ Assign var expr
+     return $ AssignA var expr
+
+assignBoolStmt :: Parser Stmt
+assignBoolStmt =
+  do var  <- identifier
+     reservedOp ":="
+     expr <- bExpression
+     return $ AssignB var expr     
  
 skipStmt :: Parser Stmt
 skipStmt = reserved "skip" >> return Skip

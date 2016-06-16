@@ -41,3 +41,15 @@ popValue stack
 
 pushValue :: [StackValue] -> StackValue -> [StackValue]    
 pushValue stack val = stack++[val]
+
+getBoolValue :: StackValue -> Bool
+getBoolValue stackVal = case stackVal of
+    IntVal i -> if i==0 then False else True
+    BoolVal b -> b
+    NullVal -> True
+
+getIntValue :: StackValue -> Int
+getIntValue stackVal = case stackVal of
+    IntVal i -> i
+    BoolVal b -> if b then 1 else 0
+    NullVal -> 0    

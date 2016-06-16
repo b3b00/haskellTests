@@ -23,5 +23,8 @@ data Machine = Machine {
 opCode :: Machine -> Int
 opCode machine = (bytecode machine) !! (pointer machine)
 
+opCodeRel :: Machine -> Int -> Int
+opCodeRel machine offset = (bytecode machine) !! ((pointer machine)+offset)
+
 opCodeIn :: Machine -> [Int] -> Bool 
 opCodeIn machine codes = elem (opCode machine) codes

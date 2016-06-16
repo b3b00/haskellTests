@@ -21,7 +21,7 @@ test3 = TestCase  $ (assertEqual "int binary op 2+1" (Machine 0 [1,1,1,2,4] [] [
 expr4 = (BBinary And (BoolConst False) (BoolConst True)) 
 test4 = TestCase  $ (assertEqual "int binary op 2+1" (Machine 0 [1,1,1,2,9] [] [BoolVal False, BoolVal True] []) (compileBExpr expr4 (Machine 0 [] [] [] [])))
 
--- hUnitTestToTests: Adapt an existing HUnit test into a list of test-framework tests
+
 tests = hUnitTestToTests $ TestList [TestLabel "expr const int 1" test1,TestLabel "expr const bool true" test2,TestLabel "expr bianry int 2+1" test3,TestLabel "expr binary bool False and True" test4]
 
 main = defaultMain tests          
