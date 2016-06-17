@@ -31,7 +31,7 @@ testCompileAndRunInt =
 
 testCompileAndRunAssignIntBinary ::  IO ()
 testCompileAndRunAssignIntBinary = 
-    let ast = parseString "( toto := 2 - 1; skip )" in
+    let ast = parseString "( toto := 2 - 1; skip; toto := -42 )" in
     let initial = trace ("compilation assign binary op ... of "++(show ast)) (compileStmt ast (Machine 0 [] [] [] [])) in
         let final = trace ("running :: "++(show initial)) runMachine initial in 
         do
