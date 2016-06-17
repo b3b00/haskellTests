@@ -21,3 +21,4 @@ getVariableInt name evalContext = case lookup name evalContext of
 
 addOrReplaceInt :: Eq k => k -> v -> [(k, v)] -> [(k, v)]
 addOrReplaceInt key value assoc = (key,value):(filter ((key /=).fst) assoc)  
+

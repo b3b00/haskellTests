@@ -9,12 +9,24 @@ import Parser
 import Debug.Trace (trace)
 
 
+printHeap :: Machine -> IO()
+printHeap machine = do
+    putStrLn "done."
+    putStrLn ""
+    putStrLn "--- HEAP ---"
+    putStrLn ""
+    putStrLn (dumpHeap machine)
+    putStrLn ""
+    putStrLn "--- HEAP ---"
+    putStrLn ""
+
 testCompileAndRunInt ::  IO ()
 testCompileAndRunInt = 
     let initial = (trace "compilation ...") (compileStmt (AssignA "toto" (IntConst 42)) (Machine 0 [] [] [] [])) in
-        let final =  (trace ("running :: "++(show initial))) runMachine initial in 
+        let final =  (trace ("running :: "++(show initial))) runMachine initial in             
         do
             putStrLn "done."
+            printHeap final
             putStrLn $ show final
 
 testCompileAndRunAssignIntBinary ::  IO ()
@@ -24,6 +36,7 @@ testCompileAndRunAssignIntBinary =
         let final = trace ("running :: "++(show initial)) runMachine initial in 
         do
             putStrLn "done."
+            printHeap final
             putStrLn $ show final
 
 testCompileAndRunAddInt :: IO()

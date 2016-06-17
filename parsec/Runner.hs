@@ -34,7 +34,7 @@ replaceNth n newVal (x:xs)
      | otherwise = x:(replaceNth (n-1) newVal xs)
 
 setInHeap :: Int -> StackValue -> [StackValue] -> [StackValue]
-setInHeap address value heap = trace ("replaceNth "++(show address)++" "++(show value)++" "++(show heap)) replaceNth address value heap
+setInHeap address value heap = replaceNth address value heap
 
 
 {- ********************************
@@ -54,12 +54,12 @@ aBinOpFunction op = case op of
 
 aBinaryOp :: Machine -> Int -> (Int -> Int -> Int) -> Machine
 aBinaryOp machine opcode op = 
-    let popped = {-trace ("binary op :: "++(show opcode)++" with "++(show machine))-} (doublePopValue (stack machine)) in
-        let newStack = {-trace ("pop :: "++(show (popped)))-} (snd popped) in
-            let x = {-trace ("poping x")-} (snd (fst popped)) in 
-                let y = {-trace ("poping y")-} (fst (fst popped)) in 
-                    let res = {-trace ("computing operation")-} ( op (getIntValue (x)) (getIntValue (y)) ) in
-                        let appendedStack = trace ("result :: "++(show res)) pushValue newStack (IntVal res) in
+    let popped = (doublePopValue (stack machine)) in
+        let newStack =  (snd popped) in
+            let x = (snd (fst popped)) in 
+                let y =  (fst (fst popped)) in 
+                    let res = ( op (getIntValue (x)) (getIntValue (y)) ) in
+                        let appendedStack =  pushValue newStack (IntVal res) in
                              Machine ((pointer machine)+1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine) 
 
 
@@ -84,13 +84,13 @@ bBinOpFunction op = case op of
 
 bBinaryOp :: Machine -> Int -> (Bool -> Bool -> Bool) -> Machine
 bBinaryOp machine opcode op = 
-    let popped = trace ("binary op :: "++(show opcode)++" with "++(show machine)) (doublePopValue (stack machine)) in
-        let newStack = trace ("pop :: "++(show (popped))) (snd popped) in
-            let x = {-trace ("poping x")-} (snd (fst popped)) in 
-                let y = {-trace ("poping y")-} (fst (fst popped)) in 
-                    let res = {-trace ("computing operation")-} ( op (getBoolValue (x)) (getBoolValue (y)) ) in
-                        let appendedStack = trace ("result :: "++(show res)) pushValue newStack (BoolVal res) in
-                            trace ((show (memCode opcode))++" -> "++(show res)) Machine ((pointer machine)+1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine) 
+    let popped = (doublePopValue (stack machine)) in
+        let newStack =  (snd popped) in
+            let x =  (snd (fst popped)) in 
+                let y =  (fst (fst popped)) in 
+                    let res = ( op (getBoolValue (x)) (getBoolValue (y)) ) in
+                        let appendedStack =  pushValue newStack (BoolVal res) in
+                             Machine ((pointer machine)+1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine) 
 
 
 
@@ -127,21 +127,21 @@ rBinaryOp machine opcode op =
 movOp :: Machine -> Machine
  
 movOp machine = 
-    let  debug = trace ("\nin mov op @"++(show (pointer machine))) 1 in  
-        let popped = trace ("mov pop @ "++(show (pointer machine))) popValue (stack machine) in
-            let  value = trace ("mov v "++(show (fst popped))) (fst popped) in
-                let addr = trace ("mov a val::"++(show value)) (bytecode machine) !! (opCodeRel machine 1) in
-                    let newheap = trace ("mov h "++(show value)++" -> @"++(show addr)) setInHeap (addr) value (heap machine) in
-                        let newStack = (snd popped) in
-                            Machine ((pointer machine)+2) (bytecode machine) newStack newheap (heapAddresses machine)
+    let  debug =  1 in  
+        let popped =  popValue (stack machine) in
+            let  value =  (fst popped) in
+                let bcaddr = (opCodeRel machine 1) in
+                        let newheap =  setInHeap (bcaddr) value (heap machine) in
+                            let newStack = (snd popped) in
+                                Machine ((pointer machine)+2) (bytecode machine) newStack newheap (heapAddresses machine)
 
 pushOp :: Machine ->  Machine
 pushOp machine = 
-    let debug = trace ("\nin push "++(show machine)) 1 in 
-        let k = trace ("push op ip+1="++(show ((pointer machine)+1))) ((pointer machine)+1) in
-            let addr = trace ("push op get head address... bytecode["++(show (k))++"]") ((bytecode machine) !! (k)) in -- trace ("push op get head address... heap["++(show (k-1))++"] ")  in                        
-                let value = trace ("push op v from "++(show addr)++"heap@"++(show (addr-1))) (heap machine) !! (addr-1)  in
-                    let newStack = trace ("push op v = "++(show value)) pushValue (stack machine) value in
+    let debug =  1 in 
+        let k =  ((pointer machine)+1) in
+            let addr =  ((bytecode machine) !! (k)) in -- trace ("push op get head address... heap["++(show (k-1))++"] ")  in                        
+                let value = (heap machine) !! (addr-1)  in
+                    let newStack =  pushValue (stack machine) value in
                         (Machine ((pointer machine)+2) (bytecode machine) newStack (heap machine) (heapAddresses machine))
 
 printOp :: Machine -> Machine
@@ -165,7 +165,7 @@ runIt :: Machine -> Machine
 
 runIt machine 
     | (pointer machine) >= (length (bytecode machine)) = machine
-    | otherwise = trace("\nIP :"++(show (pointer machine))++" -> "++(show (memCode (opCode machine)))++" \n") runIt' machine
+    | otherwise = runIt' machine
 
 
 memCode :: Int -> String
@@ -200,7 +200,7 @@ runIt' machine
     | (opCodeIn machine [1,3,8,16,17]) =  
         let opCodeFunction = (genericOpCodeFunctions (opCode machine)) in
             let opIt= opCodeFunction machine  in          
-                trace ("\n"++(memCode (opCode machine))++" @ "++(show machine)++"\n") runIt opIt         
+                runIt opIt         
     | (opCodeIn machine [4..7]) =             
              let opIt = (aBinaryOp machine  (opCode machine) (aBinOpFunction (opCode machine))) in
                 runIt opIt 
@@ -212,14 +212,6 @@ runIt' machine
                 runIt opIt     
     | otherwise = Machine (-1) [] [] [] [] 
 
-    {- | (opCode machine) == 1 = trace ("\nPUSH @ "++(show machine)++"\n") runIt (pushOp machine)
-     | (opCode machine) == 3 = let movIt = (movOp machine) in
-             trace ("\nMOV => "++(show machine)++"\n") runIt movIt
-     | (opCode machine) == 8 =             
-              let opIt = (bBinaryOp machine  (opCode machine) (bNotOp (opCode machine))) in
-                 runIt opIt                
-     | (opCode machine) == 16 = trace ("\nPUSH @ "++(show machine)++"\n") runIt (printOp machine)                                                                  
-    -} 
 
 runMachine :: Machine -> Machine  
 runMachine machine =  runIt machine

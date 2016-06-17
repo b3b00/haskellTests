@@ -105,11 +105,20 @@ compileSequence [] machine = machine
 compileSequence (h:t) machine = compileSequence t (compileStmt h machine)      
 
 
+compileAssignByteCode :: String -> Machine -> Machine
+compileAssignByteCode name machine = let newMachine = setAddressForVariableInHeap name machine in 
+        let address = getVariableAddress name newMachine in 
+            Machine 0 ((bytecode newMachine)++[3,address]) (stack newMachine) (heap newMachine) (heapAddresses newMachine) 
+
+
+
 compileStmt :: Stmt -> Machine -> Machine
 compileStmt stmt machine = case stmt of 
-    AssignA name expr -> let compiledExpr = compileAExpr expr machine in
-        Machine 0 (bytecode (compiledExpr)++[3, (length( heap (compiledExpr))) + 1]) (stack (compiledExpr)) (heap (compiledExpr)++[NullVal]) (addOrReplaceInt name ( (length (heap (compiledExpr)))) (heapAddresses (compiledExpr) )) -- on ajoute NulVal dans le heap juste pour réserver la place
-    AssignB name expr -> let compiledExpr = compileBExpr expr machine in
-        Machine 0 (bytecode (compiledExpr)++[3, (length( heap (compiledExpr))) + 1]) (stack (compiledExpr)) (heap (compiledExpr)++[NullVal]) (addOrReplaceInt name ( (length (heap (compiledExpr)))) (heapAddresses (compiledExpr) )) -- on ajoute NulVal dans le heap juste pour réserver la place
+    AssignA name expr -> 
+        let compiledExpr = compileAExpr expr machine in            
+                compileAssignByteCode name compiledExpr            
+    AssignB name expr -> 
+        let compiledExpr = compileBExpr expr machine in
+                compileAssignByteCode name compiledExpr
     Skip -> machine       
     Seq stmts -> compileSequence stmts machine
