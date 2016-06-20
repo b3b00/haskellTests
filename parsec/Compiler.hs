@@ -115,6 +115,34 @@ compileAssignByteCode name machine = let newMachine = setAddressForVariableInHea
             Machine 0 ((bytecode newMachine)++[3,address]) (stack newMachine) (heap newMachine) (heapAddresses newMachine) 
 
 
+replace :: Int -> Int -> [Int] -> [Int]
+replace index value array = (take (index-1) array) ++ [value] ++ (drop index array)
+
+setJMPAddres :: Int -> Int -> Machine -> Machine
+setJMPAddres destination opCodeAddress machine =  Machine 0 (replace opCodeAddress destination (bytecode machine)) (stack machine) (heap machine) (heapAddresses machine)
+
+compileIfThenElse :: BExpr -> Stmt -> Stmt -> Machine -> Machine
+compileIfThenElse cond ifStmt elseStmt machine = 
+    let compiledCond = compileBExpr cond machine in
+        -- add JNt/JF (17) / reserve an emptycode (and store index)
+        let compiledConditionalJump = (Machine  0 ((bytecode compiledCond)++[17,0]) (stack compiledCond) (heap compiledCond) (heapAddresses compiledCond)) in
+            let jntAddress = (length (bytecode compiledConditionalJump) ) in 
+                let comiledIfblock =  compileStmt ifStmt compiledConditionalJump in
+                    let compiledJMP = (Machine  0 ((bytecode comiledIfblock)++[15,0]) (stack comiledIfblock) (heap comiledIfblock) (heapAddresses comiledIfblock)) in
+                        let jmpAdress = (length (bytecode compiledJMP)) in 
+                            let compiledElseBlock =  compileStmt elseStmt compiledJMP in
+                                let uncondjumpaddr = trace (show compiledElseBlock) (length (bytecode compiledElseBlock)) in                                                                
+                                    let replacedUncodJMP = setJMPAddres uncondjumpaddr jmpAdress compiledElseBlock in                                         
+                                        --replacedUncodJMP
+                                        let replacedJNT = setJMPAddres (jmpAdress) jntAddress replacedUncodJMP in 
+                                            replacedJNT
+                                
+
+        
+        -- compile ifstmt and store last index+1 + ajout JMP + reserve emptycode and store index) => get last index and store it afeter JNT
+            --compile elseStmt => get last index and store it after JMP
+              --return machine
+
 
 compileStmt :: Stmt -> Machine -> Machine
 compileStmt stmt machine = case stmt of 
@@ -124,7 +152,8 @@ compileStmt stmt machine = case stmt of
     AssignB name expr -> 
         let compiledExpr = compileBExpr expr machine in
                 compileAssignByteCode name compiledExpr
-    Skip -> machine       
+    Skip -> trace ("skip compilation") Machine 0 ((bytecode machine)++[19]) (stack machine) (heap machine) (heapAddresses machine)
+    If conf ifStmt elseStmt -> compileIfThenElse conf ifStmt elseStmt machine
     Print expr -> let previous = compileAExpr expr machine in
         Machine 0 ((bytecode previous)++[18]) (stack previous) (heap previous) (heapAddresses previous)
     Seq stmts -> compileSequence stmts machine

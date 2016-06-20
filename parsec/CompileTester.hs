@@ -80,9 +80,14 @@ testCompileBoolOp = putStrLn (show (compileBExpr (BBinary And (BoolConst False) 
 
 -- ********************************* 
 
+testIfThenElse :: IO()
+testIfThenElse = putStrLn (show (compileIfThenElse (BoolConst True) (Skip) (Seq [Skip, Skip]) (Machine 0 [] [] [] []) ) )
 
+
+testReplace :: IO()
+testReplace = putStrLn (show (replace 3 42 [1..5]))
 
 main =     
-    testCompileAndRunAssignIntBinary
+    testIfThenElse
     
     
