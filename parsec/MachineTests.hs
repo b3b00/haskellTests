@@ -19,10 +19,10 @@ expr3 = (ABinary Add (IntConst 2) (IntConst 1))
 test3 = TestCase  $ (assertEqual "int binary op 2+1" (Machine 0 [1,1,1,2,4] [] [IntVal 2, IntVal 1] []) (compileAExpr expr3 (Machine 0 [] [] [] [])))
 
 expr4 = (BBinary And (BoolConst False) (BoolConst True)) 
-test4 = TestCase  $ (assertEqual "int binary op 2+1" (Machine 0 [1,1,1,2,9] [] [BoolVal False, BoolVal True] []) (compileBExpr expr4 (Machine 0 [] [] [] [])))
+test4 = TestCase  $ (assertEqual "int binary op False and true" (Machine 0 [1,1,1,2,10] [] [BoolVal False, BoolVal True] []) (compileBExpr expr4 (Machine 0 [] [] [] [])))
 
 
-tests = hUnitTestToTests $ TestList [TestLabel "expr const int 1" test1,TestLabel "expr const bool true" test2,TestLabel "expr bianry int 2+1" test3,TestLabel "expr binary bool False and True" test4]
+tests = hUnitTestToTests $ TestList [TestLabel "expr const int 1" test1,TestLabel "expr const bool true" test2,TestLabel "expr binary int 2+1" test3,TestLabel "expr binary bool False and True" test4]
 
 main = defaultMain tests          
         
