@@ -116,10 +116,12 @@ compileAssignByteCode name machine = let newMachine = setAddressForVariableInHea
 
 
 replace :: Int -> Int -> [Int] -> [Int]
-replace index value array = (take (index-1) array) ++ [value] ++ (drop index array)
+replace index value array = trace ("repl @"++(show index)++" -> "++(show (take (index-1) array))++"+"++(show value)++"+"++(show (drop index array))) (take (index-1) array) ++ [value] ++ (drop index array)
 
 setJMPAddres :: Int -> Int -> Machine -> Machine
-setJMPAddres destination opCodeAddress machine =  Machine 0 (replace opCodeAddress destination (bytecode machine)) (stack machine) (heap machine) (heapAddresses machine)
+setJMPAddres destination opCodeAddress machine = 
+    let replacedBC = (replace opCodeAddress destination (bytecode machine)) in
+        trace ("replaced BC ::"++(show replacedBC)) Machine 0  replacedBC (stack machine) (heap machine) (heapAddresses machine)
 
 compileIfThenElse :: BExpr -> Stmt -> Stmt -> Machine -> Machine
 compileIfThenElse cond ifStmt elseStmt machine = 
@@ -134,9 +136,21 @@ compileIfThenElse cond ifStmt elseStmt machine =
                                 let uncondjumpaddr =  (length (bytecode compiledElseBlock)) in                                                                
                                     let replacedUncodJMP = setJMPAddres uncondjumpaddr jmpAdress compiledElseBlock in                                         
                                         --replacedUncodJMP
-                                        let replacedJNT = setJMPAddres (jmpAdress) jntAddress replacedUncodJMP in 
+                                        let replacedJNT = setJMPAddres jmpAdress jntAddress replacedUncodJMP in 
                                             replacedJNT
                                 
+compileWhileStatement :: BExpr -> Stmt -> Machine -> Machine
+compileWhileStatement cond block machine = 
+    let loopStartAddress =  (length (bytecode machine))+1 in
+        let compiledCond = compileBExpr cond machine in 
+            let finishJump = Machine 0  ((bytecode compiledCond)++[17,0]) (stack machine) (heap machine) (heapAddresses machine)  in
+                let jntAddress = (length (bytecode finishJump)) in
+                    let compiledLoopStmt = compileStmt block finishJump in
+                        let loopback = Machine 0 ((bytecode compiledLoopStmt)++[15,loopStartAddress]) (stack machine) (heap machine) (heapAddresses machine) in 
+                            let finishLoopAddress = length (bytecode loopback) in
+                                let replacedJNT = trace("replacing @"++(show jntAddress)++" with "++(show finishLoopAddress)) setJMPAddres finishLoopAddress jntAddress loopback in 
+                                    replacedJNT
+                                --compiledLoopStmt
 
         
         -- compile ifstmt and store last index+1 + ajout JMP + reserve emptycode and store index) => get last index and store it afeter JNT
@@ -157,3 +171,4 @@ compileStmt stmt machine = case stmt of
     Print expr -> let previous = compileAExpr expr machine in
          Machine 0 ((bytecode previous)++[18]) (stack previous) (heap previous) (heapAddresses previous)
     Seq stmts ->  compileSequence stmts machine
+    While cond block -> compileWhileStatement cond block machine
