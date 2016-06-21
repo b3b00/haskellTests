@@ -33,7 +33,7 @@ todo : define bytecode / assembly
 
 replaceNth n newVal (x:xs)
      | n == 0 = newVal:xs     
-     | otherwise = x:(replaceNth (n-1) newVal xs)
+     | otherwise =  x:(replaceNth (n-1) newVal xs)
 
 setInHeap :: Int -> StackValue -> [StackValue] -> [StackValue]
 setInHeap address value heap = replaceNth address value heap
@@ -140,7 +140,7 @@ movOp :: Machine -> Machine
 movOp machine = 
     let  debug =  1 in  
         let popped =  popValue (stack machine) in
-            let  value =  (fst popped) in
+            let  value =   (fst popped) in
                 let bcaddr = (opCodeRel machine 1) in
                         let newheap =  setInHeap (bcaddr) value (heap machine) in
                             let newStack = (snd popped) in
@@ -148,10 +148,10 @@ movOp machine =
 
 pushOp :: Machine ->  Machine
 pushOp machine = 
-    let debug =  1 in 
-        let k =  ((pointer machine)+1) in
+    let debug =   1 in 
+        let k =   ((pointer machine)+1) in
             let addr =  ((bytecode machine) !! (k)) in 
-                let value = (heap machine) !! (addr-1)  in
+                let value =  (heap machine) !! (addr)  in
                     let newStack =  pushValue (stack machine) value in
                         (Machine ((pointer machine)+2) (bytecode machine) newStack (heap machine) (heapAddresses machine))
 
@@ -223,7 +223,7 @@ runIt' :: Machine -> Machine
 runIt' machine 
     | (opCodeIn machine [1,3,8,9,15,16,17,18,19]) =  
         let opCodeFunction = (genericOpCodeFunctions (opCode machine)) in
-            let opIt= opCodeFunction machine  in          
+            let opIt=  opCodeFunction machine  in          
                 runIt opIt         
     | (opCodeIn machine [4..7]) =             
              let opIt = (aBinaryOp machine  (opCode machine) (aBinOpFunction (opCode machine))) in

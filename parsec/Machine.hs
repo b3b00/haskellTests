@@ -26,6 +26,7 @@ import Stack
 16  JT  move code pointer to next bytecode avlue if top stack value is True
 17  JNT move code pointer to next bytecode avlue if top stack value is False
 18  PRT print top most value
+19  NOOP no operation
 
 -}
 
@@ -129,3 +130,5 @@ printAssemblyBC bc = case bc of
     (x:xs) ->  let r = (printAssemblyOp x bc) in
                         (fst r)++"\n"++(printAssemblyBC (snd r))
               
+getHeapValue:: String -> Machine -> StackValue
+getHeapValue  name machine = (heap machine) !! (getVariableAddress name machine)

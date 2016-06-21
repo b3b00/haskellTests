@@ -96,8 +96,8 @@ testCompileAndRunIfThenElse =
 testCompileAndRunWhile ::  IO ()
 testCompileAndRunWhile = 
     let ast = parseString "( toto := -1; while toto < 10 do (print toto; toto := toto +1 ); print toto)" in
-    let initial = trace ("compilation while... "++(show ast)++"\n") (compileStmt ast (Machine 0 [] [] [] [])) in    
-        let final = trace ("\nrunning initial :: "++(show initial)++" \n "++(printAssembly initial)) runMachine initial in 
+    let initial = trace ("compilation while... "++"\n") (compileStmt ast (Machine 0 [] [] [] [])) in    
+        let final = {-trace ("\nrunning initial :: "++(show initial)++"\n"++(printAssembly initial)++"\n")-} runMachine initial in 
         do
             putStrLn "done."
             printHeap final
@@ -107,8 +107,11 @@ testCompileAndRunWhile =
 testReplace :: IO()
 testReplace = putStrLn (show (replace 3 42 [1..5]))
 
-main =     
-    testCompileAndRunWhile
+main =
+    testCompileAndRunAssignIntBinary
+    {-testCompileAndRunAddInt-}
+    {-testCompileAndRunInt-}
+    {-testCompileAndRunWhile-}
     {-testCompileAndRunIfThenElse-}
     
     
