@@ -4,7 +4,7 @@ import Control.Monad
 import Ast
 import Machine
 import Stack
-import Assoc
+--import Assoc
 import Debug.Trace (trace)
 {-
 
@@ -163,8 +163,31 @@ printOp machine =
                 trace ("PRINT "++(show value)) (Machine ((pointer machine) +1) (bytecode machine) newStack (heap machine) (heapAddresses machine))
 
 noOp :: Machine -> Machine
-noOp machine = machine
+noOp machine = Machine ((pointer machine) +1) (bytecode machine) (stack machine) (heap machine) (heapAddresses machine)
 
+
+
+
+
+unconditionalJump :: Machine -> Machine
+unconditionalJump machine = let dest =  opCodeRel machine 1  in 
+        Machine dest (bytecode machine) (stack machine) (heap machine) (heapAddresses machine)
+
+jumpIfTrue :: Machine -> Machine 
+jumpIfTrue machine = let dest =  opCodeRel machine 1  in 
+                let popped = popValue (stack machine) in
+                    if (fst popped) == (BoolVal True) then
+                        Machine dest (bytecode machine) (stack machine) (heap machine) (heapAddresses machine)
+                    else 
+                        Machine ((pointer machine)+2) (bytecode machine) (stack machine) (heap machine) (heapAddresses machine)
+
+jumpIfNotTrue :: Machine -> Machine 
+jumpIfNotTrue machine = let dest =   opCodeRel machine 1  in 
+                let popped = popValue (stack machine) in
+                    if (fst popped) == (BoolVal False) then
+                        Machine  dest (bytecode machine) (snd popped) (heap machine) (heapAddresses machine)
+                    else 
+                        Machine ((pointer machine)+2)  (bytecode machine) (snd popped) (heap machine) (heapAddresses machine)                        
 
 {- ********************************
     
@@ -176,27 +199,10 @@ runIt :: Machine -> Machine
 
 runIt machine 
     | (pointer machine) >= (length (bytecode machine)) = machine
-    | otherwise = runIt' machine
+    | otherwise =  runIt' machine
 
 
-memCode :: Int -> String
-memCode mc = case mc of
-    1 -> "PUSH"
-    3 -> "MOV"
-    4 -> "ADD"
-    5 -> "SUB"
-    6 -> "MUL"
-    7 -> "DIV"
-    8 -> "NEG"
-    9 -> "NOT"
-    10 -> "AND"
-    11 -> "OR"
-    12 -> "EQ"
-    13 -> "GT"
-    14 -> "LT"
-    18 -> "PRINT"
-    19 -> "NOOP"
-    _ -> "TODO"
+
 
 genericOpCodeFunctions :: Int -> (Machine -> Machine)
 genericOpCodeFunctions opcode = case opcode of 
@@ -206,13 +212,16 @@ genericOpCodeFunctions opcode = case opcode of
     9 -> bNotOp
     18 -> printOp
     19 -> noOp
+    15 -> unconditionalJump 
+    16 -> jumpIfTrue 
+    17 -> jumpIfNotTrue 
     _ -> noOp
 
 
 
 runIt' :: Machine -> Machine        
 runIt' machine 
-    | (opCodeIn machine [1,3,8,9,16,17]) =  
+    | (opCodeIn machine [1,3,8,9,15,16,17,18,19]) =  
         let opCodeFunction = (genericOpCodeFunctions (opCode machine)) in
             let opIt= opCodeFunction machine  in          
                 runIt opIt         

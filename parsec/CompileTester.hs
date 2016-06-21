@@ -10,8 +10,7 @@ import Debug.Trace (trace)
 
 
 printHeap :: Machine -> IO()
-printHeap machine = do
-    putStrLn "done."
+printHeap machine = do    
     putStrLn ""
     putStrLn "--- HEAP ---"
     putStrLn ""
@@ -81,13 +80,23 @@ testCompileBoolOp = putStrLn (show (compileBExpr (BBinary And (BoolConst False) 
 -- ********************************* 
 
 testIfThenElse :: IO()
-testIfThenElse = putStrLn (show (compileIfThenElse (BoolConst True) (Skip) (Seq [Skip, Skip]) (Machine 0 [] [] [] []) ) )
+testIfThenElse = putStrLn (show (compileIfThenElse (BoolConst True) (Seq [Skip, Print (IntConst 42)]) (Seq [Print (IntConst 0), Skip]) (Machine 0 [] [] [] []) ) )
+
+testCompileAndRunIfThenElse ::  IO ()
+testCompileAndRunIfThenElse = 
+    let ast = parseString "( toto := -1; if (true) then (skip;toto := 42) else (toto := 0; skip); print 1789; print toto )" in
+    let initial = {-trace ("compilation if then else ... of "++(show ast)++"\n")-} (compileStmt ast (Machine 0 [] [] [] [])) in    
+        let final = trace ("\nrunning initial :: "++(show initial)) runMachine initial in 
+        do
+            putStrLn "done."
+            printHeap final
+            putStrLn $ show final
 
 
 testReplace :: IO()
 testReplace = putStrLn (show (replace 3 42 [1..5]))
 
 main =     
-    testIfThenElse
+    testCompileAndRunIfThenElse
     
     

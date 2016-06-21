@@ -42,7 +42,7 @@ compileAst stmt machine = compileStmt stmt machine
 compileAExpr :: AExpr ->  Machine -> Machine        
 compileAExpr expr machine = case expr of
     IntConst i -> Machine 0 (bytecode machine++[1, (length( heap machine)) + 1]) (stack machine) (heap machine++[IntVal (fromIntegral i)])  (heapAddresses machine)
-    Var n -> Machine 0 (bytecode machine++[1,(getVariableInt n (heapAddresses machine))]) (stack machine) (heap machine) (addOrReplaceInt n  (length (heap machine)) (heapAddresses machine))
+    Var n -> Machine 0 (bytecode machine++[1,(getVariableInt n (heapAddresses machine))]) (stack machine) (heap machine) (heapAddresses machine)
     ABinary op left right -> compileAbinary expr machine
     Neg expr -> let compiledExpr = compileAExpr expr machine in
         Machine 0 ((bytecode compiledExpr)++[8]) (stack compiledExpr) (heap compiledExpr) (heapAddresses compiledExpr)
@@ -131,7 +131,7 @@ compileIfThenElse cond ifStmt elseStmt machine =
                     let compiledJMP = (Machine  0 ((bytecode comiledIfblock)++[15,0]) (stack comiledIfblock) (heap comiledIfblock) (heapAddresses comiledIfblock)) in
                         let jmpAdress = (length (bytecode compiledJMP)) in 
                             let compiledElseBlock =  compileStmt elseStmt compiledJMP in
-                                let uncondjumpaddr = trace (show compiledElseBlock) (length (bytecode compiledElseBlock)) in                                                                
+                                let uncondjumpaddr =  (length (bytecode compiledElseBlock)) in                                                                
                                     let replacedUncodJMP = setJMPAddres uncondjumpaddr jmpAdress compiledElseBlock in                                         
                                         --replacedUncodJMP
                                         let replacedJNT = setJMPAddres (jmpAdress) jntAddress replacedUncodJMP in 
@@ -147,13 +147,13 @@ compileIfThenElse cond ifStmt elseStmt machine =
 compileStmt :: Stmt -> Machine -> Machine
 compileStmt stmt machine = case stmt of 
     AssignA name expr -> 
-        let compiledExpr = compileAExpr expr machine in            
+        let compiledExpr =  compileAExpr expr machine in            
                 compileAssignByteCode name compiledExpr            
     AssignB name expr -> 
-        let compiledExpr = compileBExpr expr machine in
+        let compiledExpr =   compileBExpr expr machine in
                 compileAssignByteCode name compiledExpr
-    Skip -> trace ("skip compilation") Machine 0 ((bytecode machine)++[19]) (stack machine) (heap machine) (heapAddresses machine)
-    If conf ifStmt elseStmt -> compileIfThenElse conf ifStmt elseStmt machine
+    Skip ->   Machine 0 ((bytecode machine)++[19]) (stack machine) (heap machine) (heapAddresses machine)
+    If conf ifStmt elseStmt ->  compileIfThenElse conf ifStmt elseStmt machine
     Print expr -> let previous = compileAExpr expr machine in
-        Machine 0 ((bytecode previous)++[18]) (stack previous) (heap previous) (heapAddresses previous)
-    Seq stmts -> compileSequence stmts machine
+         Machine 0 ((bytecode previous)++[18]) (stack previous) (heap previous) (heapAddresses previous)
+    Seq stmts ->  compileSequence stmts machine
