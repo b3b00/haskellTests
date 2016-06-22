@@ -37,6 +37,30 @@ une machine est consitutée de
  - un tas [StackValue] pour les constantes
 -}
 
+{- | une machine est la structure d'une VM
+ elle est constitutée de 
+
+    * un pointeur d'instruction (l'index de l'instruction courante dans le bytecode)
+    * une liste d'opcode
+    * une pile de valeur utilisée à l'exécution
+    * une zone mémoire (tas) pour  
+
+        *les valeurs constantes
+        *les valeurs de variables
+
+    * la table des addresses de variables dans le tas
+-}  
+
+data Machine = Machine {
+    pointer :: Int
+    , bytecode :: [Int]
+    , stack :: [StackValue]
+    , heap :: [StackValue]
+    , heapAddresses :: [(String,Int)]
+} deriving (Show, Eq)
+
+
+-- | retourne un memocode d'instruction (String) à partir d'un opcode
 memCode :: Int -> String
 memCode mc = case mc of
     1 -> "PUSH"
@@ -60,20 +84,14 @@ memCode mc = case mc of
     19 -> "NOOP"    
     _ -> "UNKNOWN"
 
+-- | liste des instructions (opcodes) ne prenant pas de paramètres
 zeroParamsOpCodes = [4,5,6,7,8,9,10,11,12,13,14,18,19]
 
-
-data Machine = Machine {
-    pointer :: Int
-    , bytecode :: [Int]
-    , stack :: [StackValue]
-    , heap :: [StackValue]
-    , heapAddresses :: [(String,Int)]
-} deriving (Show, Eq)
-
+-- | retourne l'opcode de l'instruction courante de la machine
 opCode :: Machine -> Int
 opCode machine = (bytecode machine) !! (pointer machine)
 
+-- retourne l'opcode situé à l'offset donné par rapport à l'instruction courante
 opCodeRel :: Machine -> Int -> Int
 opCodeRel machine offset = 
     let opcodeOffset =(pointer machine)+offset in
@@ -82,32 +100,38 @@ opCodeRel machine offset =
 
     --(bytecode machine) !! ((pointer machine)+offset)
 
+-- | retourne True si l'opcode de l'instruction courante est dans la liste en paramètre
 opCodeIn :: Machine -> [Int] -> Bool 
 opCodeIn machine codes = elem (opCode machine) codes
 
 
+-- | retourne l'adresse dans le tas de la variable passée en paramètre
 getVariableAddress :: String -> Machine -> Int
 getVariableAddress name machine = case lookup name (heapAddresses machine) of
     Just n -> n
     Nothing -> -1
 
 
--- si name E heapAddresses -> id
--- sinon heap::(name,NullVal) heapAdresses(name, len(heap))
+-- | ajoute la variable dans le tas 
+-- si la  variable existe déjà ne crée pas de nouvelle entrée dans le tas
 setAddressForVariableInHeap :: String -> Machine -> Machine
 setAddressForVariableInHeap name machine = case lookup name (heapAddresses machine) of 
     Just n -> trace (name ++ " already exists in machine") machine
     Nothing -> let address = length (heap machine) in
         trace (name ++ " address is now "++(show address))  (Machine 0 (bytecode machine) (stack machine) ((heap machine)++[NullVal]) ((heapAddresses machine)++[(name,address)]))
 
+-- | retourne un dump du tas pour les variables sous forme de chaine
+-- à partir d'un la table d'allocation des variables et d'un tas
 dump ::  [(String,Int)] -> [StackValue] -> String
 dump addresses heap = case addresses of
     [] -> ""
     ((name,addr):addrs) -> (name++"::"++(show (heap !! addr))++"\n")++(dump addrs heap)
 
+-- | retourne un dump du tas pour les variables sous forme de chaine
 dumpHeap :: Machine -> String        
 dumpHeap machine = dump (heapAddresses machine) (heap machine)
 
+-- | retourne une représentation du bytecode sous forme d'un programme de memocode
 printAssembly :: Machine -> String
 printAssembly machine  = printAssemblyBC (bytecode machine)
 
@@ -129,6 +153,7 @@ printAssemblyBC bc = case bc of
     [] -> ""
     (x:xs) ->  let r = (printAssemblyOp x bc) in
                         (fst r)++"\n"++(printAssemblyBC (snd r))
-              
+
+-- | retourne la valeur d'une variable               
 getHeapValue:: String -> Machine -> StackValue
 getHeapValue  name machine = (heap machine) !! (getVariableAddress name machine)
