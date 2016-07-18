@@ -6,7 +6,9 @@ import Compiler
 import Machine
 import Runner
 import Parser
+import SemanticChecker
 import Debug.Trace (trace)
+import Text.Parsec.Pos   
 
 
 printHeap :: Machine -> IO()
@@ -19,7 +21,7 @@ printHeap machine = do
     putStrLn "--- HEAP ---"
     putStrLn ""
 
-testCompileAndRunInt ::  IO ()
+{-testCompileAndRunInt ::  IO ()
 testCompileAndRunInt = 
     let initial = (trace "compilation ...") (compileStmt (Assign "toto" (IntConst 42)) (Machine 0 [] [] [] [])) in
         let final =  (trace ("running :: "++(show initial))) runMachine initial in             
@@ -27,19 +29,19 @@ testCompileAndRunInt =
             putStrLn "done."
             printHeap final
             putStrLn $ show final
+-}
 
-{-
 
 testCompileAndRunAssignIntBinary ::  IO ()
 testCompileAndRunAssignIntBinary = 
-    let ast = parseString "( toto := 2 - 1; skip; toto := -42 )" in
+    let ast = parseString "( toto := 2 - 1;\nskip;\n toto := -42 )" in
     let initial = trace ("compilation assign binary op ... of "++(show ast)) (compileStmt ast (Machine 0 [] [] [] [])) in
         let final = trace ("running :: "++(show initial)) runMachine initial in 
         do
             putStrLn "done."
             printHeap final
             putStrLn $ show final
-
+{-
 testCompileAndRunAddInt :: IO()
 testCompileAndRunAddInt = 
     let ast = (compileAExpr (ABinary Add (IntConst 30) (IntConst 12)) (Machine 0 [] [] [] [])) in
@@ -127,9 +129,54 @@ testNewGrammar =
             putStrLn "done."            
             putStrLn $ show ast 
 
+testSemanticConstI :: IO()
+testSemanticConstI = 
+    let t = getExprType (IntConst 1 (newPos "dummy" 0 0)) in
+        do
+            putStrLn $ show t
+
+testSemanticConstB :: IO()
+testSemanticConstB = 
+    let t = getExprType (BoolConst True (newPos "dummy" 0 0)) in
+        do
+            putStrLn $ show t            
+
+testSemanticNegOK :: IO()
+testSemanticNegOK = 
+    let t = getExprType (Neg ( IntConst 1 (newPos "dummy" 0 0))) in
+        do
+            putStrLn $ show t                        
+
+testSemanticNegKO :: IO()
+testSemanticNegKO = 
+    let t = getExprType (Neg ( BoolConst True (newPos "dummy" 0 0))) in
+        do
+            putStrLn $ show t                                    
+
+
+testSemanticComplexKO :: IO()
+testSemanticComplexKO = 
+    let t = getExprType (Not ( Binary Add (IntConst 1 (newPos "dummy" 0 0) ) (IntConst 2 (newPos "dummy" 0 0)) )) in
+            putStrLn $ show t                                    
+
+testSemanticComplexOK :: IO()
+testSemanticComplexOK = 
+    let t = getExprType (Neg ( Binary Add (IntConst 1 (newPos "dummy" 0 0)) (IntConst 2 (newPos "dummy" 0 0)) )) in
+        do
+            putStrLn $ show t                                    
+
+
+
 main =
-    testNewGrammar
-    {-testCompileAndRunAssignIntBinary-}
+    do
+    {-testNewGrammar-}
+        {-testSemanticConstI
+        testSemanticConstB
+        testSemanticNegOK
+        testSemanticNegKO
+        testSemanticComplexOK
+        testSemanticComplexKO-}
+    testCompileAndRunAssignIntBinary
     {-testCompileAndRunAddInt-}
     {-testCompileAndRunInt-}
     {-testCompileAndRunWhile-}

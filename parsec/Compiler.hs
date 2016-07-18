@@ -41,9 +41,9 @@ compileAst stmt machine = compileStmt stmt machine
 
 compileExpr :: Expr ->  Machine -> Machine        
 compileExpr expr machine = case expr of
-    IntConst i ->  Machine 0 (bytecode machine++[1, (length( heap machine))]) (stack machine) (heap machine++[IntVal (fromIntegral i)])  (heapAddresses machine)
-    BoolConst b -> Machine 0 (bytecode machine++[1, (length( heap machine))]) (stack machine) (heap machine++[BoolVal b]) (heapAddresses machine)
-    Var n -> Machine 0 (bytecode machine++[1,(getVariableInt n (heapAddresses machine))]) (stack machine) (heap machine) (heapAddresses machine)
+    IntConst i pos ->  Machine 0 (bytecode machine++[1, (length( heap machine))]) (stack machine) (heap machine++[IntVal (fromIntegral i)])  (heapAddresses machine)
+    BoolConst b pos -> Machine 0 (bytecode machine++[1, (length( heap machine))]) (stack machine) (heap machine++[BoolVal b]) (heapAddresses machine)
+    Var n pos -> Machine 0 (bytecode machine++[1,(getVariableInt n (heapAddresses machine))]) (stack machine) (heap machine) (heapAddresses machine)
     Binary op left right -> compileBinary expr machine
     Neg expr -> let compiledExpr = compileExpr expr machine in
         Machine 0 ((bytecode compiledExpr)++[8]) (stack compiledExpr) (heap compiledExpr) (heapAddresses compiledExpr)
@@ -132,12 +132,12 @@ compileWhileStatement cond block machine =
 
 compileStmt :: Stmt -> Machine -> Machine
 compileStmt stmt machine = case stmt of 
-    Assign name expr -> 
-        let compiledExpr =  compileExpr expr machine in            
+    Assign name expr pos -> 
+        let compiledExpr =   compileExpr expr machine in            
                 compileAssignByteCode name compiledExpr                
     Skip ->   Machine 0 ((bytecode machine)++[19]) (stack machine) (heap machine) (heapAddresses machine)
-    If conf ifStmt elseStmt ->  compileIfThenElse conf ifStmt elseStmt machine
-    Print expr -> let previous = compileExpr expr machine in
+    If conf ifStmt elseStmt pos ->   compileIfThenElse conf ifStmt elseStmt machine
+    Print expr pos -> let previous =  compileExpr expr machine in
          Machine 0 ((bytecode previous)++[18]) (stack previous) (heap previous) (heapAddresses previous)
     Seq stmts ->  compileSequence stmts machine
-    While cond block -> compileWhileStatement cond block machine
+    While cond block pos ->  compileWhileStatement cond block machine

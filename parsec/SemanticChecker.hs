@@ -67,9 +67,9 @@ getBinaryExprType op left right =
 
 getExprType :: Expr -> ExprType
 getExprType expr = case expr of 
-    IntConst i ->  IntExpr
-    BoolConst b -> BoolExpr
-    Var n -> UnknownExpr
+    IntConst i pos ->  IntExpr
+    BoolConst b pos -> BoolExpr
+    Var n pos -> UnknownExpr
     Binary op left right -> binaryCompatibilty (op,(getExprType left),(getExprType right))
     Neg exprN ->  let rightType = (trace ("testing - "++(show exprN))) getExprType exprN in
         if rightType == IntExpr then IntExpr else ErrorExpr        

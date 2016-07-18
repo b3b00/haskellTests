@@ -7,6 +7,7 @@ import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Expr
 import Text.ParserCombinators.Parsec.Language
 import qualified Text.ParserCombinators.Parsec.Token as Token
+import Debug.Trace (trace)
 
 
 {-
@@ -80,34 +81,38 @@ printStmt :: Parser Stmt
 printStmt =
   do reserved "print"
      aexpr <- expression
-     return $ Print aexpr
+     pos <- getPosition
+     return $ Print aexpr pos
     
 ifStmt :: Parser Stmt
 ifStmt =
   do reserved "if"
+     pos <- getPosition
      cond  <- expression
      reserved "then"
      stmt1 <- statement
      reserved "else"
      stmt2 <- statement
-     return $ If cond stmt1 stmt2
+     return $ If cond stmt1 stmt2 pos
  
 whileStmt :: Parser Stmt
 whileStmt =
   do reserved "while"
+     pos <- getPosition
      cond <- expression
      reserved "do"
      stmt <- statement
-     return $ While cond stmt
+     return $ While cond stmt pos
 
 
 
 assignStmt :: Parser Stmt
 assignStmt =
   do var  <- identifier
+     pos <- getPosition     
      reservedOp ":="
      expr <- expression
-     return $ Assign var expr     
+     return $ (trace ("assign position :: "++(show pos))) Assign var expr  pos   
  
 skipStmt :: Parser Stmt
 skipStmt = reserved "skip" >> return Skip
@@ -120,7 +125,7 @@ expression = buildExpressionParser operators term
  
 
 
-operators = [ [Prefix (reservedOp "-"   >> return (Neg             ))          ]
+operators = [ [Prefix (reservedOp "-"   >> return (Neg ))          ]
              , [Infix  (reservedOp "*"   >> return (Binary Multiply)) AssocLeft,
                 Infix  (reservedOp "/"   >> return (Binary Divide  )) AssocLeft]
              , [Infix  (reservedOp "+"   >> return (Binary Add     )) AssocLeft,
@@ -136,10 +141,21 @@ operators = [ [Prefix (reservedOp "-"   >> return (Neg             ))          ]
  
 
 term =  parens expression
-     <|> liftM Var identifier
-     <|> liftM IntConst integer
-     <|> (reserved "true"  >> return (BoolConst True ))
-     <|> (reserved "false" >> return (BoolConst False))     
+     <|> do id <- identifier
+            pos <- getPosition
+            return $ Var id pos
+     <|> do v <- integer 
+            pos  <- getPosition 
+            return $ IntConst v pos
+     <|> do 
+          reserved "true" 
+          pos <- getPosition 
+          return $ (BoolConst True pos)
+     <|> do 
+          reserved "false" 
+          pos <- getPosition 
+          return $ (BoolConst True pos)
+
     
 
 

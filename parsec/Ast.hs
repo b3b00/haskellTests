@@ -1,12 +1,14 @@
 module Ast where 
 
+import Text.Parsec(SourcePos)
+
 {-
 	Abstract Syntax Tree
 -}
 
-data Expr = BoolConst Bool
-  | IntConst Integer
-  | Var String
+data Expr = BoolConst Bool SourcePos
+  | IntConst Integer SourcePos
+  | Var String SourcePos
   | Neg Expr
   | Not Expr
   | Binary BinOp Expr Expr
@@ -25,10 +27,10 @@ data BinOp = Add
     deriving (Show)
 
 data Stmt = Seq [Stmt]
-          | Assign String Expr          
-          | If Expr Stmt Stmt
-          | While Expr Stmt
-          | Print Expr
-          | Skip
+          | Assign String Expr SourcePos         
+          | If Expr Stmt Stmt SourcePos
+          | While Expr Stmt SourcePos
+          | Print Expr SourcePos
+          | Skip 
             deriving (Show)
 
