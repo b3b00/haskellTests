@@ -39,70 +39,42 @@ compileAst :: Stmt -> Machine -> Machine
 compileAst stmt machine = compileStmt stmt machine
 
 
-compileAExpr :: AExpr ->  Machine -> Machine        
-compileAExpr expr machine = case expr of
+compileExpr :: Expr ->  Machine -> Machine        
+compileExpr expr machine = case expr of
     IntConst i ->  Machine 0 (bytecode machine++[1, (length( heap machine))]) (stack machine) (heap machine++[IntVal (fromIntegral i)])  (heapAddresses machine)
+    BoolConst b -> Machine 0 (bytecode machine++[1, (length( heap machine))]) (stack machine) (heap machine++[BoolVal b]) (heapAddresses machine)
     Var n -> Machine 0 (bytecode machine++[1,(getVariableInt n (heapAddresses machine))]) (stack machine) (heap machine) (heapAddresses machine)
-    ABinary op left right -> compileAbinary expr machine
-    Neg expr -> let compiledExpr = compileAExpr expr machine in
+    Binary op left right -> compileBinary expr machine
+    Neg expr -> let compiledExpr = compileExpr expr machine in
         Machine 0 ((bytecode compiledExpr)++[8]) (stack compiledExpr) (heap compiledExpr) (heapAddresses compiledExpr)
+    Not expr -> let newMachine = compileExpr expr machine in
+        Machine 0 ((bytecode newMachine)++[9]) (stack newMachine) (heap newMachine) (heapAddresses newMachine)        
         
 
 
-aBinOpCode :: ABinOp -> Int
-aBinOpCode op = case op of
+binOpCode :: BinOp -> Int
+binOpCode op = case op of
     Add -> 4
     Substract -> 5
     Multiply -> 6
     Divide -> 7
+    And -> 10
+    Or -> 11
+    Greater -> 13
+    Lesser  -> 14
+    Equals -> 12
  
 
 
-compileAbinary :: AExpr -> Machine -> Machine -- AExpr is a ABinary
-compileAbinary expr machine = case expr of 
-    ABinary op left right -> 
-        let leftMachine = compileAExpr left machine in          -- 1: compile left
-            let rightMachine = compileAExpr right leftMachine in    -- 2: compile right
-                (Machine 0 ((bytecode rightMachine)++[(aBinOpCode op)]) (stack rightMachine) (heap rightMachine) (heapAddresses rightMachine))
+compileBinary :: Expr -> Machine -> Machine 
+compileBinary expr machine = case expr of 
+    Binary op left right -> 
+        let leftMachine = compileExpr left machine in          -- 1: compile left
+            let rightMachine = compileExpr right leftMachine in    -- 2: compile right
+                (Machine 0 ((bytecode rightMachine)++[(binOpCode op)]) (stack rightMachine) (heap rightMachine) (heapAddresses rightMachine))
     otherwise -> error "incorrect execution path !"
 
 
--- 2: compile right
--- 3: add aBinOpOpCode op in bytecode list
-
-
-bBinOpCode :: BBinOp -> Int
-bBinOpCode op = case op of
-    And -> 10
-    Or -> 11
-
-compileBBinary :: BExpr -> Machine -> Machine
-compileBBinary expr machine = case expr of
-    BBinary op left right -> 
-        let leftMachine = compileBExpr left machine in          -- 1: compile left
-                    let rightMachine = compileBExpr right leftMachine in    -- 2: compile right
-                        (Machine 0 ((bytecode rightMachine)++[(bBinOpCode op)]) (stack rightMachine) (heap rightMachine) (heapAddresses rightMachine))
-    otherwise -> error "incorrect execution path !"
-    
-rBinOpCode :: RBinOp -> Int
-rBinOpCode op = case op of
-    Greater -> 13
-    Less  -> 14
-    Equals -> 12
-
-compileRBinary :: RBinOp -> AExpr -> AExpr -> Machine -> Machine
-compileRBinary op left right machine = 
-            let leftMachine = compileAExpr left machine in          -- 1: compile left
-                let rightMachine = compileAExpr right leftMachine in    -- 2: compile right
-                    (Machine 0 ((bytecode rightMachine)++[(rBinOpCode op)]) (stack rightMachine) (heap rightMachine) (heapAddresses rightMachine))
-
-compileBExpr :: BExpr ->  Machine -> Machine        
-compileBExpr expr machine = case expr of
-    BoolConst b -> Machine 0 (bytecode machine++[1, (length( heap machine))]) (stack machine) (heap machine++[BoolVal b]) (heapAddresses machine)
-    Not expr -> let newMachine = compileBExpr expr machine in
-            Machine 0 ((bytecode newMachine)++[9]) (stack newMachine) (heap newMachine) (heapAddresses newMachine)
-    BBinary op e1 e2 -> compileBBinary expr machine
-    RBinary rop e1 e2 -> compileRBinary rop e1 e2 machine 
 
 compileSequence :: [Stmt] -> Machine -> Machine
 compileSequence [] machine = machine
@@ -123,9 +95,9 @@ setJMPAddres destination opCodeAddress machine =
     let replacedBC = (replace opCodeAddress destination (bytecode machine)) in
          Machine 0  replacedBC (stack machine) (heap machine) (heapAddresses machine)
 
-compileIfThenElse :: BExpr -> Stmt -> Stmt -> Machine -> Machine
+compileIfThenElse :: Expr -> Stmt -> Stmt -> Machine -> Machine
 compileIfThenElse cond ifStmt elseStmt machine = 
-    let compiledCond = compileBExpr cond machine in
+    let compiledCond = compileExpr cond machine in
         -- add JNt/JF (17) / reserve an emptycode (and store index)
         let compiledConditionalJump = (Machine  0 ((bytecode compiledCond)++[17,0]) (stack compiledCond) (heap compiledCond) (heapAddresses compiledCond)) in
             let jntAddress = (length (bytecode compiledConditionalJump) ) in 
@@ -139,10 +111,10 @@ compileIfThenElse cond ifStmt elseStmt machine =
                                         let replacedJNT = setJMPAddres jmpAdress jntAddress replacedUncodJMP in 
                                             replacedJNT
                                 
-compileWhileStatement :: BExpr -> Stmt -> Machine -> Machine
+compileWhileStatement :: Expr -> Stmt -> Machine -> Machine
 compileWhileStatement cond block machine = 
     let loopStartAddress =  (length (bytecode machine)) in
-        let compiledCond = compileBExpr cond machine in 
+        let compiledCond = compileExpr cond machine in 
             let finishJump =  Machine 0  ((bytecode compiledCond)++[17,0]) (stack compiledCond) (heap compiledCond) (heapAddresses compiledCond)  in
                 let jntAddress = (length (bytecode finishJump)) in
                     let compiledLoopStmt = compileStmt block finishJump in
@@ -160,15 +132,12 @@ compileWhileStatement cond block machine =
 
 compileStmt :: Stmt -> Machine -> Machine
 compileStmt stmt machine = case stmt of 
-    AssignA name expr -> 
-        let compiledExpr =  compileAExpr expr machine in            
-                compileAssignByteCode name compiledExpr            
-    AssignB name expr -> 
-        let compiledExpr =   compileBExpr expr machine in
-                compileAssignByteCode name compiledExpr
+    Assign name expr -> 
+        let compiledExpr =  compileExpr expr machine in            
+                compileAssignByteCode name compiledExpr                
     Skip ->   Machine 0 ((bytecode machine)++[19]) (stack machine) (heap machine) (heapAddresses machine)
     If conf ifStmt elseStmt ->  compileIfThenElse conf ifStmt elseStmt machine
-    Print expr -> let previous = compileAExpr expr machine in
+    Print expr -> let previous = compileExpr expr machine in
          Machine 0 ((bytecode previous)++[18]) (stack previous) (heap previous) (heapAddresses previous)
     Seq stmts ->  compileSequence stmts machine
     While cond block -> compileWhileStatement cond block machine

@@ -21,12 +21,14 @@ printHeap machine = do
 
 testCompileAndRunInt ::  IO ()
 testCompileAndRunInt = 
-    let initial = (trace "compilation ...") (compileStmt (AssignA "toto" (IntConst 42)) (Machine 0 [] [] [] [])) in
+    let initial = (trace "compilation ...") (compileStmt (Assign "toto" (IntConst 42)) (Machine 0 [] [] [] [])) in
         let final =  (trace ("running :: "++(show initial))) runMachine initial in             
         do
             putStrLn "done."
             printHeap final
             putStrLn $ show final
+
+{-
 
 testCompileAndRunAssignIntBinary ::  IO ()
 testCompileAndRunAssignIntBinary = 
@@ -104,11 +106,30 @@ testCompileAndRunWhile =
             putStrLn $ show final            
 
 
-testReplace :: IO()
-testReplace = putStrLn (show (replace 3 42 [1..5]))
+testCompileSemanticError ::  IO ()
+testCompileSemanticError = 
+    let ast = parseString "( toto := 12; print toto)" in
+    let initial = trace ("compilation while... "++"\n") (compileStmt ast (Machine 0 [] [] [] [])) in    
+        let final = {-trace ("\nrunning initial :: "++(show initial)++"\n"++(printAssembly initial)++"\n")-} runMachine initial in 
+        do
+            putStrLn "done."
+            printHeap final
+            putStrLn $ show final                        
+
+-}
+
+
+
+testNewGrammar :: IO()
+testNewGrammar = 
+    let ast = parseString "( toto := 12 + 30 ; print toto)" in    
+        do
+            putStrLn "done."            
+            putStrLn $ show ast 
 
 main =
-    testCompileAndRunAssignIntBinary
+    testNewGrammar
+    {-testCompileAndRunAssignIntBinary-}
     {-testCompileAndRunAddInt-}
     {-testCompileAndRunInt-}
     {-testCompileAndRunWhile-}
