@@ -7,6 +7,7 @@ import Stack
 import Assoc
 import Debug.Trace (trace)
 import Text.Parsec(SourcePos)
+import Text.Parsec.Pos
 {-
 
 todo : define bytecode / assembly
@@ -51,6 +52,9 @@ second(_,x,_) = x
 first(_,x,_) = x
 
 
+showPos ::  SourcePos -> String
+showPos pos = (show (sourceLine pos))++", "++(show (sourceColumn pos))
+
 binaryCompatibilty :: (BinOp, ExprType, ExprType) -> SourcePos -> CheckResult
 binaryCompatibilty types pos = case types  of
     (Add, IntExpr, IntExpr) -> (IntExpr,[])
@@ -62,7 +66,7 @@ binaryCompatibilty types pos = case types  of
     (Lesser, IntExpr, IntExpr) -> (BoolExpr,[])
     (Greater, IntExpr, IntExpr) -> (BoolExpr,[])
     (Equals, IntExpr, IntExpr) -> (BoolExpr,[])
-    otherwise -> (ErrorExpr,["uncompatible types ("++(show (second types))++" and "++(show (third types))++")for "++(show (first types))++" at "++(show pos)])
+    otherwise -> (ErrorExpr,["uncompatible types ("++(show (second types))++" and "++(show (third types))++")for "++(show (first types))++" at "++(showPos pos)])
 
 
 getBinaryExprType :: BinOp -> SourcePos -> Expr -> Expr -> CheckResult
@@ -84,9 +88,9 @@ getExprType expr = case expr of
                                         let compat = binaryCompatibilty (op,fst lt,fst lt) pos in
                                             (fst compat, (snd compat)++(snd lt)++(snd rt))                                            
     Neg pos exprN ->  let rightType = (trace ("testing - "++(show exprN))) getExprType exprN in
-        if (fst rightType) == IntExpr then (IntExpr,[]) else (ErrorExpr ,["bad type for unary '-' operator at "++(show pos)]++(snd rightType))       
+        if (fst rightType) == IntExpr then (IntExpr,[]) else (ErrorExpr ,["bad type for unary '-' operator at "++(showPos pos)]++(snd rightType))       
     Not pos exprN -> let rightType = (trace ("testing not "++(show exprN))) getExprType exprN in
-        if ((fst rightType) == BoolExpr) then (BoolExpr,[]) else (ErrorExpr ,["bad type for unary 'not' operator at "++(show pos)]++(snd rightType)) 
+        if ((fst rightType) == BoolExpr) then (BoolExpr,[]) else (ErrorExpr ,["bad type for unary 'not' operator at "++(showPos pos)]++(snd rightType)) 
             
 
 
