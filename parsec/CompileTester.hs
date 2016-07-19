@@ -172,11 +172,11 @@ main =
     {-testNewGrammar-}
         {-testSemanticConstI
         testSemanticConstB
-        testSemanticNegOK
+        testSemanticNegOK-}
         testSemanticNegKO
-        testSemanticComplexOK
-        testSemanticComplexKO-}
-    testCompileAndRunAssignIntBinary
+        {-testSemanticComplexOK-}
+        testSemanticComplexKO
+    {-testCompileAndRunAssignIntBinary-}
     {-testCompileAndRunAddInt-}
     {-testCompileAndRunInt-}
     {-testCompileAndRunWhile-}

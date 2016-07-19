@@ -6,6 +6,7 @@ import Machine
 import Stack
 import Assoc
 import Debug.Trace (trace)
+import Text.Parsec(SourcePos)
 {-
 
 todo : define bytecode / assembly
@@ -37,45 +38,57 @@ data ExprType = IntExpr
   | ErrorExpr
   deriving (Show, Eq)
 
+type  CheckResult = (ExprType, [String])  
+
 
 -- | vérifie la correction sémantique
 -- retourne  une liste d'erreur. Si le programme est correct retourne une liste vide.
 semanticCheck :: Stmt -> [String]
 semanticCheck ast = []
 
-
-binaryCompatibilty :: (BinOp, ExprType, ExprType) -> ExprType
-binaryCompatibilty op = case op  of
-    (Add, IntExpr, IntExpr) -> IntExpr
-    (Substract, IntExpr, IntExpr) -> IntExpr
-    (Multiply, IntExpr, IntExpr) -> IntExpr
-    (Divide, IntExpr, IntExpr) -> IntExpr
-    (And, BoolExpr, BoolExpr) -> IntExpr
-    (Or, BoolExpr, BoolExpr) -> IntExpr
-    (Lesser, IntExpr, IntExpr) -> IntExpr
-    (Greater, IntExpr, IntExpr) -> IntExpr
-    (Equals, IntExpr, IntExpr) -> IntExpr
-    otherwise -> ErrorExpr
+third (_, _, x) = x
+second(_,x,_) = x
+first(_,x,_) = x
 
 
-getBinaryExprType :: BinOp -> Expr -> Expr -> ExprType
-getBinaryExprType op left right =
+binaryCompatibilty :: (BinOp, ExprType, ExprType) -> SourcePos -> CheckResult
+binaryCompatibilty types pos = case types  of
+    (Add, IntExpr, IntExpr) -> (IntExpr,[])
+    (Substract, IntExpr, IntExpr) -> (IntExpr,[])
+    (Multiply, IntExpr, IntExpr) -> (IntExpr,[])
+    (Divide, IntExpr, IntExpr) -> (IntExpr,[])
+    (And, BoolExpr, BoolExpr) -> (BoolExpr,[])
+    (Or, BoolExpr, BoolExpr) -> (BoolExpr,[])
+    (Lesser, IntExpr, IntExpr) -> (BoolExpr,[])
+    (Greater, IntExpr, IntExpr) -> (BoolExpr,[])
+    (Equals, IntExpr, IntExpr) -> (BoolExpr,[])
+    otherwise -> (ErrorExpr,["uncompatible types ("++(show (second types))++" and "++(show (third types))++")for "++(show (first types))++" at "++(show pos)])
+
+
+getBinaryExprType :: BinOp -> SourcePos -> Expr -> Expr -> CheckResult
+getBinaryExprType op pos left right =
     case op of
-        Add -> let rt = getExprType right in
-                let lt = getExprType left in
-                    if rt == IntExpr && lt == IntExpr then IntExpr else ErrorExpr
+        Add -> let rt = fst (getExprType right) in
+                let lt = fst (getExprType left) in
+                    binaryCompatibilty (op,rt,lt) pos
 
-getExprType :: Expr -> ExprType
+
+
+getExprType :: Expr -> CheckResult
 getExprType expr = case expr of 
-    IntConst i pos ->  IntExpr
-    BoolConst b pos -> BoolExpr
-    Var n pos -> UnknownExpr
-    Binary op pos left right -> binaryCompatibilty (op,(getExprType left),(getExprType right))
+    IntConst i pos ->  (IntExpr,[])
+    BoolConst b pos -> (BoolExpr,[])
+    Var n pos -> (UnknownExpr,["dont known"])
+    Binary op pos left right -> let lt = getExprType left in
+                                    let rt = getExprType right in
+                                        let compat = binaryCompatibilty (op,fst lt,fst lt) pos in
+                                            (fst compat, (snd compat)++(snd lt)++(snd rt))                                            
     Neg pos exprN ->  let rightType = (trace ("testing - "++(show exprN))) getExprType exprN in
-        if rightType == IntExpr then IntExpr else ErrorExpr        
+        if (fst rightType) == IntExpr then (IntExpr,[]) else (ErrorExpr ,["bad type for unary '-' operator at "++(show pos)]++(snd rightType))       
     Not pos exprN -> let rightType = (trace ("testing not "++(show exprN))) getExprType exprN in
-        if (rightType == BoolExpr) then BoolExpr else ErrorExpr
+        if ((fst rightType) == BoolExpr) then (BoolExpr,[]) else (ErrorExpr ,["bad type for unary 'not' operator at "++(show pos)]++(snd rightType)) 
             
+
 
 
 
