@@ -80,9 +80,9 @@ statement' =   ifStmt
 printStmt :: Parser Stmt
 printStmt =
   do reserved "print"
-     aexpr <- expression
+     expr <- expression
      pos <- getPosition
-     return $ Print aexpr pos
+     return $ Print pos expr 
     
 ifStmt :: Parser Stmt
 ifStmt =
@@ -93,7 +93,7 @@ ifStmt =
      stmt1 <- statement
      reserved "else"
      stmt2 <- statement
-     return $ If cond stmt1 stmt2 pos
+     return $ If pos cond stmt1 stmt2 
  
 whileStmt :: Parser Stmt
 whileStmt =
@@ -102,7 +102,7 @@ whileStmt =
      cond <- expression
      reserved "do"
      stmt <- statement
-     return $ While cond stmt pos
+     return $ While pos cond stmt 
 
 
 
@@ -112,7 +112,7 @@ assignStmt =
      pos <- getPosition     
      reservedOp ":="
      expr <- expression
-     return $ (trace ("assign position :: "++(show pos))) Assign var expr  pos   
+     return $  Assign pos var expr 
  
 skipStmt :: Parser Stmt
 skipStmt = reserved "skip" >> return Skip
@@ -125,7 +125,7 @@ expression = buildExpressionParser operators term
  
 
 
-operators = [ [Prefix (reservedOp "-"   >> return (Neg ))          ]
+{-operators = [ [Prefix (reservedOp "-"   >> return (Neg ))          ]
              , [Infix  (reservedOp "*"   >> return (Binary Multiply)) AssocLeft,
                 Infix  (reservedOp "/"   >> return (Binary Divide  )) AssocLeft]
              , [Infix  (reservedOp "+"   >> return (Binary Add     )) AssocLeft,
@@ -137,24 +137,38 @@ operators = [ [Prefix (reservedOp "-"   >> return (Neg ))          ]
               [Infix  (reservedOp "<" >> return (Binary Lesser     )) AssocLeft,
                Infix  (reservedOp ">"  >> return (Binary Greater      )) AssocLeft,
                Infix  (reservedOp "=="  >> return (Binary Equals      )) AssocLeft
-              ]]
+              ]]-}
+
+operators = [ [Prefix (Neg <$> getPosition <* reservedOp "-")]
+             , [Infix  (Binary Multiply <$> getPosition <* reservedOp "*") AssocLeft,
+                Infix  (Binary Divide <$> getPosition <* reservedOp "/") AssocLeft]
+             , [Infix  (Binary Add <$> getPosition <* reservedOp "+") AssocLeft,
+                Infix  (Binary Substract <$> getPosition <* reservedOp "-") AssocLeft],
+             [Prefix (Not <$> getPosition <* reservedOp "not")]           
+             , [Infix (Binary And <$> getPosition <* reservedOp "and") AssocLeft,
+                Infix (Binary Or <$> getPosition <* reservedOp "or") AssocLeft
+              ],
+              [Infix (Binary Lesser <$> getPosition <* reservedOp "<") AssocLeft,
+               Infix  (Binary Greater <$> getPosition <* reservedOp ">") AssocLeft,
+               Infix  (Binary Equals <$> getPosition <* reservedOp "==") AssocLeft
+              ]]              
  
 
 term =  parens expression
      <|> do id <- identifier
             pos <- getPosition
-            return $ Var id pos
+            return $ Var pos id 
      <|> do v <- integer 
             pos  <- getPosition 
-            return $ IntConst v pos
+            return $ IntConst pos v 
      <|> do 
           reserved "true" 
           pos <- getPosition 
-          return $ (BoolConst True pos)
+          return $ (BoolConst pos True )
      <|> do 
           reserved "false" 
           pos <- getPosition 
-          return $ (BoolConst True pos)
+          return $ (BoolConst pos True )
 
     
 
