@@ -166,18 +166,31 @@ testSemanticComplexOK =
             putStrLn $ show t                               -}     
 
 
-testParseAndCheck ::  IO ()
-testParseAndCheck = 
+
+
+testCheckBadAssign ::  IO ()
+testCheckBadAssign = 
     let ast = parseString "( toto := 2 - 1;\nskip;\n toto := true )" in
-    let checked = trace ("semantic check of "++(show ast)) (semanticCheck ast ) in        
+    let checked = semanticCheck ast  in        
         do
             putStrLn "parse and semantic check done."            
             putStrLn $ show checked
 
+testCheckBadWhile ::  IO ()
+testCheckBadWhile = 
+    let ast = parseString "( \n i := 0;\n while (i ) do \n  (print i;\n   i := i + 1 ))" in
+    let checked =semanticCheck ast  in        
+        do
+            putStrLn "parse and semantic check done."                        
+            putStrLn $ show checked            
+
 
 main =
     do
-        testParseAndCheck
+        testCheckBadAssign
+        putStrLn "---"
+        testCheckBadWhile
+        putStrLn "---"
     {-testNewGrammar-}
         {-testSemanticConstI
         testSemanticConstB

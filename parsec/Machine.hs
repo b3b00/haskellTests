@@ -117,9 +117,9 @@ getVariableAddress name machine = case lookup name (heapAddresses machine) of
 -- si la  variable existe déjà ne crée pas de nouvelle entrée dans le tas
 setAddressForVariableInHeap :: String -> Machine -> Machine
 setAddressForVariableInHeap name machine = case lookup name (heapAddresses machine) of 
-    Just n -> trace (name ++ " already exists in machine") machine
+    Just n ->  machine
     Nothing -> let address = length (heap machine) in
-        trace (name ++ " address is now "++(show address))  (Machine 0 (bytecode machine) (stack machine) ((heap machine)++[NullVal]) ((heapAddresses machine)++[(name,address)]))
+         (Machine 0 (bytecode machine) (stack machine) ((heap machine)++[NullVal]) ((heapAddresses machine)++[(name,address)]))
 
 -- | retourne un dump du tas pour les variables sous forme de chaine
 -- à partir d'un la table d'allocation des variables et d'un tas
