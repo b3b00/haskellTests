@@ -6,7 +6,9 @@ import Compiler
 import Machine
 import Runner
 import Parser
+import SemanticChecker
 import Debug.Trace (trace)
+import Text.Parsec.Pos   
 
 
 printHeap :: Machine -> IO()
@@ -19,25 +21,27 @@ printHeap machine = do
     putStrLn "--- HEAP ---"
     putStrLn ""
 
-testCompileAndRunInt ::  IO ()
+{-testCompileAndRunInt ::  IO ()
 testCompileAndRunInt = 
-    let initial = (trace "compilation ...") (compileStmt (AssignA "toto" (IntConst 42)) (Machine 0 [] [] [] [])) in
+    let initial = (trace "compilation ...") (compileStmt (Assign "toto" (IntConst 42)) (Machine 0 [] [] [] [])) in
         let final =  (trace ("running :: "++(show initial))) runMachine initial in             
         do
             putStrLn "done."
             printHeap final
             putStrLn $ show final
+-}
+
 
 testCompileAndRunAssignIntBinary ::  IO ()
 testCompileAndRunAssignIntBinary = 
-    let ast = parseString "( toto := 2 - 1; skip; toto := -42 )" in
+    let ast = parseString "( toto := 2 - 1;\nskip;\n toto := -42 + 153 )" in
     let initial = trace ("compilation assign binary op ... of "++(show ast)) (compileStmt ast (Machine 0 [] [] [] [])) in
         let final = trace ("running :: "++(show initial)) runMachine initial in 
         do
             putStrLn "done."
             printHeap final
             putStrLn $ show final
-
+{-
 testCompileAndRunAddInt :: IO()
 testCompileAndRunAddInt = 
     let ast = (compileAExpr (ABinary Add (IntConst 30) (IntConst 12)) (Machine 0 [] [] [] [])) in
@@ -104,11 +108,97 @@ testCompileAndRunWhile =
             putStrLn $ show final            
 
 
-testReplace :: IO()
-testReplace = putStrLn (show (replace 3 42 [1..5]))
+testCompileSemanticError ::  IO ()
+testCompileSemanticError = 
+    let ast = parseString "( toto := 12; print toto)" in
+    let initial = trace ("compilation while... "++"\n") (compileStmt ast (Machine 0 [] [] [] [])) in    
+        let final = {-trace ("\nrunning initial :: "++(show initial)++"\n"++(printAssembly initial)++"\n")-} runMachine initial in 
+        do
+            putStrLn "done."
+            printHeap final
+            putStrLn $ show final                        
+
+-}
+
+
+
+testNewGrammar :: IO()
+testNewGrammar = 
+    let ast = parseString "( toto := 12 + 30 ; print toto)" in    
+        do
+            putStrLn "done."            
+            putStrLn $ show ast 
+{-
+testSemanticConstI :: IO()
+testSemanticConstI = 
+    let t = getExprType (IntConst (newPos "dummy" 0 0) 1) in
+        do
+            putStrLn $ show t
+
+testSemanticConstB :: IO()
+testSemanticConstB = 
+    let t = getExprType (BoolConst (newPos "dummy" 0 0) True) in
+        do
+            putStrLn $ show t            
+
+testSemanticNegOK :: IO()
+testSemanticNegOK = 
+    let t = getExprType (Neg  (newPos "d" 0 0) ( IntConst (newPos "dummy" 0 0) 1)) in
+        do
+            putStrLn $ show t                        
+
+testSemanticNegKO :: IO()
+testSemanticNegKO = 
+    let t = getExprType (Neg  (newPos "d" 0 0) ( BoolConst (newPos "dummy" 0 0) True)) in
+        do
+            putStrLn $ show t                                    
+
+
+testSemanticComplexKO :: IO()
+testSemanticComplexKO = 
+    let t = getExprType (Not (newPos "d" 0 0)  ( Binary Add (newPos "dumb" 0 0) (IntConst (newPos "dummy" 0 0) 1 ) (IntConst (newPos "dummy" 0 0) 2) )) in
+            putStrLn $ show t                                    
+
+testSemanticComplexOK :: IO()
+testSemanticComplexOK = 
+    let t = getExprType (Neg (newPos "d" 0 0) ( Binary Add (newPos "dumb" 0 0) (IntConst (newPos "dummy" 0 0) 1) (IntConst (newPos "dummy" 0 0) 2)  )) in
+        do
+            putStrLn $ show t                               -}     
+
+
+
+
+testCheckBadAssign ::  IO ()
+testCheckBadAssign = 
+    let ast = parseString "( toto := 2 - 1;\nskip;\n toto := true )" in
+    let checked = semanticCheck ast  in        
+        do
+            putStrLn "parse and semantic check done."            
+            putStrLn $ show checked
+
+testCheckBadWhile ::  IO ()
+testCheckBadWhile = 
+    let ast = parseString "( \n i := 0;\n while (i ) do \n  (print i;\n   i := i + 1 ))" in
+    let checked =semanticCheck ast  in        
+        do
+            putStrLn "parse and semantic check done."                        
+            putStrLn $ show checked            
+
 
 main =
-    testCompileAndRunAssignIntBinary
+    do
+        testCheckBadAssign
+        putStrLn "---"
+        testCheckBadWhile
+        putStrLn "---"
+    {-testNewGrammar-}
+        {-testSemanticConstI
+        testSemanticConstB
+        testSemanticNegOK-}
+        {-testSemanticNegKO-}
+        {-testSemanticComplexOK-}
+        {-testSemanticComplexKO-}
+    {-testCompileAndRunAssignIntBinary-}
     {-testCompileAndRunAddInt-}
     {-testCompileAndRunInt-}
     {-testCompileAndRunWhile-}

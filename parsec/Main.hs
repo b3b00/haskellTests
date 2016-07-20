@@ -13,9 +13,10 @@ import qualified Text.ParserCombinators.Parsec.Token as Token
 
 import Parser
 import Ast
-import Runtime
 import Compiler
 import Machine
+import SemanticChecker
+import Runner
 
 
 
@@ -26,12 +27,38 @@ import Machine
 
 --
 
+printHeap :: Machine -> IO()
+printHeap machine = do    
+    putStrLn ""
+    putStrLn "--- HEAP ---"
+    putStrLn ""
+    putStrLn (dumpHeap machine)
+    putStrLn ""
+    putStrLn "--- HEAP ---"
+    putStrLn ""
+
+
 action :: String -> Stmt -> IO()
 action act ast = case act of 
-    "-run" -> (run ast)
-    "-compile" -> putStrLn (show (compileAst ast (Machine 0 [] [] [] []) ))
-    _ -> putStrLn ("unknwon action ["++act++"]")
-
+    --"-run" -> (run ast)
+    "-compile" -> do 
+        
+            let checked = semanticCheck ast in
+                if length checked > 0 then          
+                    putStrLn ("semantic chec failed "++(show checked))
+                else 
+                    let compiled = (compileAst ast (Machine 0 [] [] [] []) ) in
+                        putStrLn ("compilation suceeded : "++(show ast))
+    "-compileAndRun" -> do        
+            let checked = semanticCheck ast in
+                if length checked > 0 then            
+                    putStrLn ("semantic chec failed "++(show checked))  
+                else 
+                    let compiled = (compileAst ast (Machine 0 [] [] [] []) ) in
+                        let result = runIt compiled in
+                            do
+                                putStrLn "done :: "
+                                printHeap result
 main = do
     args <- getArgs    
     (parseFile (args!!1)) >>= action (args !! 0) 

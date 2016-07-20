@@ -18,51 +18,51 @@ executable myParsec
   build-depends:       base >=4.9, parsec, containers
   default-language:    Haskell2010
 
-Test-Suite boolExprTests
-  type:                exitcode-stdio-1.0
-  main-is:             BoolExprTests.hs
-  build-depends:       base,  
-                       test-framework,
-                       test-framework-hunit,
-                       HUnit
-  default-language:    Haskell2010  
-  
-Test-Suite intExprTests
-  type:                exitcode-stdio-1.0
-  main-is:             IntExprTests.hs
-  build-depends:       base,
-                       test-framework,
-                       test-framework-hunit,
-                       HUnit
-  default-language:    Haskell2010    
-  
-Test-Suite stmtTests
-  type:                exitcode-stdio-1.0
-  main-is:             StmtTests.hs
-  build-depends:       base,
-                       parsec,
-                       test-framework,
-                       test-framework-hunit,
-                       HUnit
-  default-language:    Haskell2010    
-
-Test-Suite stackTests
-  type:                exitcode-stdio-1.0
-  main-is:             StackTests.hs
-  build-depends:       base,
-                       test-framework,
-                       test-framework-hunit,
-                       HUnit
-  default-language:    Haskell2010     
-
-Test-Suite MachineTests
-  type:                exitcode-stdio-1.0
-  main-is:             MachineTests.hs
-  build-depends:       base,
-                       test-framework,
-                       test-framework-hunit,
-                       HUnit
-  default-language:    Haskell2010     
+--Test-Suite boolExprTests
+--  type:                exitcode-stdio-1.0
+--  main-is:             BoolExprTests.hs
+--  build-depends:       base,  
+--                       test-framework,
+--                       test-framework-hunit,
+--                       HUnit
+--  default-language:    Haskell2010  
+--  
+--Test-Suite intExprTests
+--  type:                exitcode-stdio-1.0
+--  main-is:             IntExprTests.hs
+--  build-depends:       base,
+--                       test-framework,
+--                       test-framework-hunit,
+--                       HUnit
+--  default-language:    Haskell2010    
+--  
+--Test-Suite stmtTests
+--  type:                exitcode-stdio-1.0
+--  main-is:             StmtTests.hs
+--  build-depends:       base,
+--                       parsec,
+--                       test-framework,
+--                       test-framework-hunit,
+--                       HUnit
+--  default-language:    Haskell2010    
+--
+--Test-Suite stackTests
+--  type:                exitcode-stdio-1.0
+--  main-is:             StackTests.hs
+--  build-depends:       base,
+--                       test-framework,
+--                       test-framework-hunit,
+--                       HUnit
+--  default-language:    Haskell2010     
+--
+--Test-Suite MachineTests
+--  type:                exitcode-stdio-1.0
+--  main-is:             MachineTests.hs
+--  build-depends:       base,
+--                       test-framework,
+--                       test-framework-hunit,
+--                       HUnit
+--  default-language:    Haskell2010     
 
 
 Test-Suite CompileAndRunTests
