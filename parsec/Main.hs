@@ -48,7 +48,7 @@ action act ast = case act of
                     putStrLn ("semantic chec failed "++(show checked))
                 else 
                     let compiled = (compileAst ast (Machine 0 [] [] [] []) ) in
-                        putStrLn "compilation suceeded : "
+                        putStrLn ("compilation suceeded : "++(show ast))
     "-compileAndRun" -> do        
             let checked = semanticCheck ast in
                 if length checked > 0 then            

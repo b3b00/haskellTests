@@ -49,7 +49,7 @@ semanticCheck stmt = snd (checkStatement stmt  ([],[]) )
 
 third (_, _, x) = x
 second(_,x,_) = x
-first(_,x,_) = x
+first(x,_,_) = x
 
 
 showPos ::  SourcePos -> String
@@ -67,15 +67,19 @@ showPos pos = (show (sourceLine pos))++", "++(show (sourceColumn pos))
 checkAssign ::  Stmt -> SemanticContext -> SemanticContext
 checkAssign assign context = case assign of
     Assign pos varName expr -> let assignCheck =  getExprType expr (fst context) in
-                                let varType =  getVariableType varName (fst context) in
-                                    if varType == (fst assignCheck) then
-                                         context   
-                                         -- correct assignement
-                                    else 
-                                        if varType == UnknownExpr then
-                                            ( (addOrReplaceVarType varName  (fst assignCheck) (fst context)) ,[]) -- first assignement
-                                        else
-                                            (fst context, (snd context)++["bad assignement at "++(showPos pos)++" : expecting "++(show varType)++" but found "++(show (fst assignCheck))])
+                                let exprtype = (fst assignCheck) in    
+                                    let varType =  getVariableType varName (fst context) in
+                                        if varType == exprtype then
+                                             context   
+                                             -- correct assignement
+                                        else 
+                                            if varType == UnknownExpr then
+                                                ( (addOrReplaceVarType varName  (fst assignCheck) (fst context)) ,[]) -- first assignement
+                                            else
+                                                if  exprtype == ErrorExpr then -- error in expression
+                                                    (fst context, snd assignCheck)
+                                                else  -- error in assignement
+                                                    trace("error : "++(show (varType))) (fst context, (snd context)++["bad assignement at "++(showPos pos)++" : expecting "++(show varType)++" but found "++(show (fst assignCheck))]++(snd assignCheck))
     otherwise -> error "bas execution path : assign check"     
 
 
@@ -135,16 +139,7 @@ binaryCompatibilty types pos = case types  of
     (Lesser, IntExpr, IntExpr) -> (BoolExpr,[])
     (Greater, IntExpr, IntExpr) -> (BoolExpr,[])
     (Equals, IntExpr, IntExpr) -> (BoolExpr,[])
-    otherwise -> (ErrorExpr,["uncompatible types ("++(show (second types))++" and "++(show (third types))++")for "++(show (first types))++" at "++(showPos pos)])
-
-
-{-getBinaryExprType :: BinOp -> SourcePos -> Expr -> Expr -> [(String,ExprType)]-> CheckResult
-getBinaryExprType op pos left right context =
-    case op of
-        Add -> let rt = fst (getExprType right) in
-                let lt = fst (getExprType left) in
-                    binaryCompatibilty (op,rt,lt) pos-}
-
+    otherwise -> (ErrorExpr,["uncompatible types ("++(show (second types))++" and "++(show (third types))++") for "++(show (first types))++" at "++(showPos pos)])
 
 
 getExprType :: Expr -> [(String,ExprType)] -> CheckResult
@@ -157,7 +152,7 @@ getExprType expr varTypes = case expr of
                     else (varType,[])
     Binary op pos left right -> let lt = getExprType left varTypes in
                                     let rt = getExprType right varTypes in
-                                        let compat = binaryCompatibilty (op,fst lt,fst lt) pos in
+                                        let compat = (trace ("checking compat for "++(show (fst lt))++" and "++(show (fst rt))++" _ "++(show op))) binaryCompatibilty (op,fst lt,fst rt) pos in
                                             (fst compat, (snd compat)++(snd lt)++(snd rt))                                            
     Neg pos exprN ->  let rightType = (trace ("testing - "++(show exprN))) getExprType exprN varTypes in
         if (fst rightType) == IntExpr then (IntExpr,[]) else (ErrorExpr ,["bad type for unary - operator at "++(showPos pos)]++(snd rightType))       

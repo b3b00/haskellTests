@@ -12,7 +12,7 @@ while (i < 11) do
 
 (
 a := 1;
-a := 	true;
+a :=  1 + true;
 a := 2
 )
 
