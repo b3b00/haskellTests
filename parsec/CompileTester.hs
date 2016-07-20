@@ -128,7 +128,7 @@ testNewGrammar =
         do
             putStrLn "done."            
             putStrLn $ show ast 
-
+{-
 testSemanticConstI :: IO()
 testSemanticConstI = 
     let t = getExprType (IntConst (newPos "dummy" 0 0) 1) in
@@ -163,19 +163,28 @@ testSemanticComplexOK :: IO()
 testSemanticComplexOK = 
     let t = getExprType (Neg (newPos "d" 0 0) ( Binary Add (newPos "dumb" 0 0) (IntConst (newPos "dummy" 0 0) 1) (IntConst (newPos "dummy" 0 0) 2)  )) in
         do
-            putStrLn $ show t                                    
+            putStrLn $ show t                               -}     
 
+
+testParseAndCheck ::  IO ()
+testParseAndCheck = 
+    let ast = parseString "( toto := 2 - 1;\nskip;\n toto := true )" in
+    let checked = trace ("semantic check of "++(show ast)) (semanticCheck ast ) in        
+        do
+            putStrLn "parse and semantic check done."            
+            putStrLn $ show checked
 
 
 main =
     do
+        testParseAndCheck
     {-testNewGrammar-}
         {-testSemanticConstI
         testSemanticConstB
         testSemanticNegOK-}
-        testSemanticNegKO
+        {-testSemanticNegKO-}
         {-testSemanticComplexOK-}
-        testSemanticComplexKO
+        {-testSemanticComplexKO-}
     {-testCompileAndRunAssignIntBinary-}
     {-testCompileAndRunAddInt-}
     {-testCompileAndRunInt-}
