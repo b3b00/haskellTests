@@ -152,7 +152,7 @@ getExprType expr varTypes = case expr of
                     else (varType,[])
     Binary op pos left right -> let lt = getExprType left varTypes in
                                     let rt = getExprType right varTypes in
-                                        let compat = (trace ("checking compat for "++(show (fst lt))++" and "++(show (fst rt))++" _ "++(show op))) binaryCompatibilty (op,fst lt,fst rt) pos in
+                                        let compat =  binaryCompatibilty (op,fst lt,fst rt) pos in
                                             (fst compat, (snd compat)++(snd lt)++(snd rt))                                            
     Neg pos exprN ->  let rightType = (trace ("testing - "++(show exprN))) getExprType exprN varTypes in
         if (fst rightType) == IntExpr then (IntExpr,[]) else (ErrorExpr ,["bad type for unary - operator at "++(showPos pos)]++(snd rightType))       

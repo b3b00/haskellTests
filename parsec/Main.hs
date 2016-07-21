@@ -17,6 +17,7 @@ import Compiler
 import Machine
 import SemanticChecker
 import Runner
+import Runtime
 
 
 
@@ -65,7 +66,7 @@ action act ast = case act of
                     putStrLn ("semantic chec failed "++(show checked))  
                 else 
                     do 
-                        putStrLn "TODO : call Runtime.play on ast"
+                        run ast
 
 main = do
     args <- getArgs    
