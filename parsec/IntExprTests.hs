@@ -5,26 +5,29 @@ import Test.Framework.Providers.HUnit
 import Test.HUnit
 import Ast
 import Runtime
+import Text.Parsec.Pos   
 
-twoPlusTwo = ABinary Add (IntConst 2) (IntConst 2)
+pos = (newPos "dummy" 0 0)
 
-test1 = TestCase  $ (assertEqual "2+2" (4) (evalAExpr twoPlusTwo []))
+twoPlusTwo = Binary Add pos (IntConst pos 2) (IntConst pos 2)
 
-fiveDivTwo = ABinary Divide (IntConst 5) (IntConst 2)
+test1 = TestCase  $ (assertEqual "2+2" (IntegerV 4) (evalExpr twoPlusTwo []))
 
-test2 = TestCase  $ (assertEqual "5/2" (2) (evalAExpr fiveDivTwo []))
+fiveDivTwo = Binary Divide pos (IntConst pos 5) (IntConst pos 2)
 
-fiveMinusTwo = ABinary Substract (IntConst 5) (IntConst 2)
+test2 = TestCase  $ (assertEqual "5/2" (IntegerV 2) (evalExpr fiveDivTwo []))
 
-test3 = TestCase  $ (assertEqual "5-2" (3) (evalAExpr fiveMinusTwo []))
+fiveMinusTwo = Binary Substract pos (IntConst pos 5) (IntConst pos 2)
 
-fiveTimesTwo = ABinary Multiply (IntConst 5) (IntConst 2)
+test3 = TestCase  $ (assertEqual "5-2" (IntegerV 3) (evalExpr fiveMinusTwo []))
 
-test4 = TestCase  $ (assertEqual "5*2" (10) (evalAExpr fiveTimesTwo []))
+fiveTimesTwo = Binary Multiply pos (IntConst pos 5) (IntConst pos 2)
 
-variable = Var "toto"
+test4 = TestCase  $ (assertEqual "5*2" (IntegerV 10) (evalExpr fiveTimesTwo []))
 
-test5 = TestCase  $ (assertEqual "toto" (10) (evalAExpr variable [("toto",10)]))
+variable = Var pos "toto"
+
+test5 = TestCase  $ (assertEqual "toto" (IntegerV 10) (evalExpr variable [("toto",IntegerV 10)]))
 
 
 -- hUnitTestToTests: Adapt an existing HUnit test into a list of test-framework tests

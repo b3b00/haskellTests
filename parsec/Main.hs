@@ -59,6 +59,14 @@ action act ast = case act of
                             do
                                 putStrLn "done :: "
                                 printHeap result
+    "-i" -> do
+        let checked = semanticCheck ast in
+                if length checked > 0 then            
+                    putStrLn ("semantic chec failed "++(show checked))  
+                else 
+                    do 
+                        putStrLn "TODO : call Runtime.play on ast"
+
 main = do
     args <- getArgs    
     (parseFile (args!!1)) >>= action (args !! 0) 
