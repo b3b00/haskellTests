@@ -6,7 +6,7 @@ data StackValue = StrVal String
            | IntVal Int
            | BoolVal Bool
            | NullVal
-            deriving (Show, Eq)
+            deriving (Show, Eq, Read)
 
  
 stackValueToString sv = case sv of

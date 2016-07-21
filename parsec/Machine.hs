@@ -58,7 +58,7 @@ data Machine = Machine {
     , stack :: [StackValue]
     , heap :: [StackValue]
     , heapAddresses :: [(String,Int)]
-} deriving (Show, Eq)
+} deriving (Show, Eq, Read)
 
 
 -- | retourne un memocode d'instruction (String) à partir d'un opcode
