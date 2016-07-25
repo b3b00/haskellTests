@@ -54,7 +54,7 @@ aBinOpFunction op = case op of
 
 
 
-aBinaryOp :: Machine -> Int -> (Int -> Int -> Int) -> Machine
+aBinaryOp :: Machine -> Int -> (Int -> Int -> Int) -> IO Machine
 aBinaryOp machine opcode op = 
     let popped = (doublePopValue (stack machine)) in
         let newStack =  (snd popped) in
@@ -62,17 +62,17 @@ aBinaryOp machine opcode op =
                 let y =  (fst (fst popped)) in 
                     let res = ( op (getIntValue (x)) (getIntValue (y)) ) in
                         let appendedStack =  pushValue newStack (IntVal res) in
-                             Machine ((pointer machine)+1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine) 
+                             do return $ (Machine ((pointer machine)+1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine))
 
 
-aNegOp :: Machine -> Machine
+aNegOp :: Machine -> IO Machine
 aNegOp machine =
     let popped =  popValue (stack machine) in
         let newStack = (snd popped)  in
             let v =  (getIntValue (fst popped)) in            
                 let negV = 0 - v in    
                     let appendedStack = (pushValue newStack (IntVal negV)) in                     
-                         (Machine ((pointer machine ) +1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine))
+                         do return $ (Machine ((pointer machine ) +1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine))
 
 {- ********************************
     
@@ -93,7 +93,7 @@ bBinOpFunction op = case op of
     
 
 
-bBinaryOp :: Machine -> Int -> (Bool -> Bool -> Bool) -> Machine
+bBinaryOp :: Machine -> Int -> (Bool -> Bool -> Bool) -> IO Machine
 bBinaryOp machine opcode op = 
     let popped = (doublePopValue (stack machine)) in
         let newStack =  (snd popped) in
@@ -101,21 +101,21 @@ bBinaryOp machine opcode op =
                 let y =  (fst (fst popped)) in 
                     let res = ( op (getBoolValue (x)) (getBoolValue (y)) ) in
                         let appendedStack =  pushValue newStack (BoolVal res) in
-                             Machine ((pointer machine)+1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine) 
+                             do return $ (Machine ((pointer machine)+1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine)) 
 
 
 
-bNotOp :: Machine -> Machine
+bNotOp :: Machine -> IO Machine
 bNotOp machine =
     let popped =  popValue (stack machine) in
         let newStack =  (snd popped)  in
             let v = (getBoolValue (fst popped)) in 
                 let appendedStack =   pushValue newStack (BoolVal v) in                     
-                     (Machine ((pointer machine ) +1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine))
+                     do return $ (Machine ((pointer machine ) +1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine))
 
 
 
-rBinaryOp :: Machine -> Int -> (Int -> Int -> Bool) -> Machine
+rBinaryOp :: Machine -> Int -> (Int -> Int -> Bool) -> IO Machine
 rBinaryOp machine opcode op = 
     let popped =  (doublePopValue (stack machine)) in
         let newStack =  (snd popped) in
@@ -123,7 +123,7 @@ rBinaryOp machine opcode op =
                 let y = (fst (fst popped)) in 
                     let res =  ( op (getIntValue (x)) (getIntValue (y)) ) in
                         let appendedStack =  pushValue newStack (BoolVal res) in
-                             Machine ((pointer machine)+1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine)   
+                             do return $ (Machine ((pointer machine)+1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine))
 
 
 
@@ -135,7 +135,7 @@ rBinaryOp machine opcode op =
 
    ******************************** -}    
 
-movOp :: Machine -> Machine
+movOp :: Machine -> IO Machine
  
 movOp machine = 
     let  debug =  1 in  
@@ -144,50 +144,53 @@ movOp machine =
                 let bcaddr = (opCodeRel machine 1) in
                         let newheap =  setInHeap (bcaddr) value (heap machine) in
                             let newStack = (snd popped) in
-                                Machine ((pointer machine)+2) (bytecode machine) newStack newheap (heapAddresses machine)
+                                do return $  (Machine ((pointer machine)+2) (bytecode machine) newStack newheap (heapAddresses machine))
 
-pushOp :: Machine ->  Machine
+pushOp :: Machine -> IO Machine
 pushOp machine = 
     let debug =   1 in 
         let k =   ((pointer machine)+1) in
             let addr =  ((bytecode machine) !! (k)) in 
                 let value =  (heap machine) !! (addr)  in
                     let newStack =  pushValue (stack machine) value in
-                        (Machine ((pointer machine)+2) (bytecode machine) newStack (heap machine) (heapAddresses machine))
+                        do return $ (Machine ((pointer machine)+2) (bytecode machine) newStack (heap machine) (heapAddresses machine))
 
-printOp :: Machine -> Machine
+printOp :: Machine -> IO Machine
 printOp machine =
     let popped = popValue (stack machine) in 
         let newStack = (snd popped) in
             let value = (fst popped) in
-                trace ("PRINT "++(show value)) (Machine ((pointer machine) +1) (bytecode machine) newStack (heap machine) (heapAddresses machine))
-
-noOp :: Machine -> Machine
-noOp machine = Machine ((pointer machine) +1) (bytecode machine) (stack machine) (heap machine) (heapAddresses machine)
-
+                do 
+                    putStrLn ("PRINT "++(show value))
+                    return $ ((Machine ((pointer machine) +1) (bytecode machine) newStack (heap machine) (heapAddresses machine)))
 
 
+noOp :: Machine -> IO Machine
+noOp machine = do return $ (Machine ((pointer machine) +1) (bytecode machine) (stack machine) (heap machine) (heapAddresses machine))
 
 
-unconditionalJump :: Machine -> Machine
+
+
+
+unconditionalJump :: Machine -> IO Machine
 unconditionalJump machine = let dest =  opCodeRel machine 1  in 
-        Machine dest (bytecode machine) (stack machine) (heap machine) (heapAddresses machine)
+        do return $ (Machine dest (bytecode machine) (stack machine) (heap machine) (heapAddresses machine))
 
-jumpIfTrue :: Machine -> Machine 
+jumpIfTrue :: Machine -> IO Machine 
 jumpIfTrue machine = let dest =  opCodeRel machine 1  in 
                 let popped = popValue (stack machine) in
                     if (fst popped) == (BoolVal True) then
-                        Machine dest (bytecode machine) (stack machine) (heap machine) (heapAddresses machine)
+                        do return $ (Machine dest (bytecode machine) (stack machine) (heap machine) (heapAddresses machine))
                     else 
-                        Machine ((pointer machine)+2) (bytecode machine) (stack machine) (heap machine) (heapAddresses machine)
+                        do return $ (Machine ((pointer machine)+2) (bytecode machine) (stack machine) (heap machine) (heapAddresses machine))
 
-jumpIfNotTrue :: Machine -> Machine 
+jumpIfNotTrue :: Machine -> IO Machine 
 jumpIfNotTrue machine = let dest =   opCodeRel machine 1  in 
                 let popped = popValue (stack machine) in
                     if (fst popped) == (BoolVal False) then
-                        Machine  dest (bytecode machine) (snd popped) (heap machine) (heapAddresses machine)
+                        do return $ (Machine  dest (bytecode machine) (snd popped) (heap machine) (heapAddresses machine))
                     else 
-                        Machine ((pointer machine)+2)  (bytecode machine) (snd popped) (heap machine) (heapAddresses machine)                        
+                        do return $ (Machine ((pointer machine)+2)  (bytecode machine) (snd popped) (heap machine) (heapAddresses machine))                        
 
 {- ********************************
     
@@ -195,16 +198,17 @@ jumpIfNotTrue machine = let dest =   opCodeRel machine 1  in
 
    ******************************** -}    
 
-runIt :: Machine -> Machine
+runIt :: Machine -> IO Machine
 
 runIt machine 
-    | (pointer machine) >= (length (bytecode machine)) = machine
+    | (pointer machine) >= (length (bytecode machine)) = do
+        return machine
     | otherwise =  runIt' machine
 
 
 
 
-genericOpCodeFunctions :: Int -> (Machine -> Machine)
+genericOpCodeFunctions :: Int -> (Machine -> IO Machine)
 genericOpCodeFunctions opcode = case opcode of 
     1 -> pushOp
     3 -> movOp
@@ -219,25 +223,33 @@ genericOpCodeFunctions opcode = case opcode of
 
 
 
-runIt' :: Machine -> Machine        
+runIt' :: Machine -> IO Machine        
 runIt' machine 
     | (opCodeIn machine [1,3,8,9,15,16,17,18,19]) =  
         let opCodeFunction = (genericOpCodeFunctions (opCode machine)) in
             let opIt=  opCodeFunction machine  in          
-                runIt opIt         
+                do 
+                    machine <- opIt
+                    runIt machine         
     | (opCodeIn machine [4..7]) =             
              let opIt = (aBinaryOp machine  (opCode machine) (aBinOpFunction (opCode machine))) in
-                runIt opIt     
+                do 
+                    machine <- opIt
+                    runIt machine       
     | (opCodeIn machine [10,11]) =             
              let opIt = (bBinaryOp machine  (opCode machine) (bBinOpFunction (opCode machine))) in
-                 runIt opIt
+                 do 
+                    machine <- opIt
+                    runIt machine  
     | (opCodeIn machine [12,14]) =             
              let opIt = (rBinaryOp machine  (opCode machine) (rBinOpFunction (opCode machine))) in
-                runIt opIt     
-    | otherwise = Machine (-1) [] [] [] [] 
+                do 
+                    machine <- opIt
+                    runIt machine       
+    | otherwise = do return $ Machine (-1) [] [] [] []
 
 
-runMachine :: Machine -> Machine  
+runMachine :: Machine -> IO Machine  
 runMachine machine =  runIt machine
     
     

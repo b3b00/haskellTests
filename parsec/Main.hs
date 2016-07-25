@@ -39,63 +39,79 @@ printHeap machine = do
     putStrLn ""
 
 
-action :: String -> String -> Stmt -> IO()
-action act out ast = case act of 
-    --"-run" -> (run ast)
-   {- "-compile" -> do 
-        
-            let checked = semanticCheck ast in
-                if length checked > 0 then          
-                    putStrLn ("semantic chec failed "++(show checked))
-                else 
-                    let compiled = (compileAst ast (Machine 0 [] [] [] []) ) in
-                        putStrLn ("compilation suceeded : "++(show ast))-}
-    "-compileAndRun" -> do        
-            let checked = semanticCheck ast in
-                if length checked > 0 then            
-                    putStrLn ("semantic chec failed "++(show checked))  
-                else 
-                    let compiled = (compileAst ast (Machine 0 [] [] [] []) ) in
-                        let result = runIt compiled in
-                            do
-                                putStrLn "done :: "
-                                printHeap result
-    "-compile" -> do
-            let checked = semanticCheck ast in
-                 if length checked > 0 then            
-                            putStrLn ("semantic chec failed "++(show checked))  
-                        else 
-                            let compiled = (compileAst ast (Machine 0 [] [] [] []) ) in
-                                let serialized  = (show compiled) in
-                                    do                                    
-                                        writeFile out serialized
-                                        putStrLn ("compilation done to "++out)
-                                    
-    "-i" -> do
-        let checked = semanticCheck ast in
-                if length checked > 0 then            
-                    putStrLn ("semantic chec failed "++(show checked))  
-                else 
-                    do 
-                        run ast
+dispatch :: [(String, [String] -> IO ())]
+dispatch =  [ ("-r", runBC)
+            , ("-compile", compile)
+            , ("-i", interprete)
+            --, ("-compileAndRun", compileAndRun)
+            ]
+
+{- run ByteCode -}
+runBC :: [String] -> IO()
+runBC args = do 
+            putStrLn "running..."
+            readFile (args!!0) >>= runFile
+            
 
 runFile :: String -> IO()
 runFile machineSerial  = do
-    let machine = read machineSerial  in
-        let result = runIt machine in 
-            do
-                putStrLn "done :: "
-                printHeap result
+        let machine = read machineSerial 
+        result <- runIt machine   
+        putStrLn "done :: "
+        printHeap result       
+                
+{- compile to byetcode -}
+
+compile :: [String] -> IO()
+compile args = 
+    do 
+        ast <-  (parseFile (args!!0))   
+        let out = (args!!1) 
+            checked = semanticCheck ast 
+        if length checked > 0 then            
+            putStrLn ("semantic chec failed "++(show checked))  
+        else        
+            do         
+                let compiled = (compileAst ast (Machine 0 [] [] [] []) ) 
+                    serialized  = (show compiled) 
+                writeFile out serialized
+                putStrLn ("compilation done to "++out)
+
+{-compileAndRun :: [String] -> IO()
+compileAndRun args =       
+    do
+        ast <- (parseFile (args !! 0))  
+        putStrLn "to refactor something wrong here "                    
+        let checked = semanticCheck ast in
+            if length checked > 0 then            
+                putStrLn ("semantic chec failed "++(show checked))  
+            else 
+                let compiled = (compileAst ast (Machine 0 [] [] [] []) ) in
+                    result <- runIt compiled 
+                    putStrLn "done :: "
+                    printHeap result-}
+
+{- interprete -}                            
+interprete :: [String] -> IO()
+interprete args =
+    do 
+        ast <-  (parseFile (args!!0))   
+        let checked = semanticCheck ast in
+                if length checked > 0 then            
+                   putStrLn ("semantic chec failed "++(show checked))  
+                else 
+                   run ast
+
+
+
+
+
+
 main = do
-    args <- getArgs        
-    case (args!!0) of
-        "-run" -> do 
-            putStrLn "running..."
-            readFile (args!!1) >>= runFile
-            putStrLn ("deserialize and run "++(args!!1))
-        otherwise -> do
-            putStrLn "generic AST action"
-            (parseFile (args!!1)) >>= action (args !! 0) (args!!2)
+    (command:args) <- getArgs
+    putStrLn ("MAIN :: "++command++" // "++(show args))
+    let (Just action) = lookup command dispatch
+    action args
     
 
 tac  = unlines . reverse . lines
