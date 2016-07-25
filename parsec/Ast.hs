@@ -7,7 +7,8 @@ import Text.Parsec(SourcePos)
 -}
 
 data Expr = BoolConst SourcePos Bool 
-  | IntConst SourcePos Integer 
+  | IntConst SourcePos Integer
+  | StringConstSourcePos String
   | Var SourcePos String 
   | Neg SourcePos Expr 
   | Not SourcePos Expr 
