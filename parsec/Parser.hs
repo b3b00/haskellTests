@@ -158,6 +158,9 @@ term =  parens expression
      <|> do id <- identifier
             pos <- getPosition
             return $ Var pos id 
+     <|> do str <- stringLiteral 
+            pos <- getPosition 
+            return StringConst pos str
      <|> do v <- integer 
             pos  <- getPosition 
             return $ IntConst pos v 
