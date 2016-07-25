@@ -29,10 +29,9 @@ addOrReplaceValue key value assoc = (key,value):(filter ((key /=).fst) assoc)
 **** entrypoint 
 -}
 
---play :: Stmt -> List -> IO()
-play stmt evalContext = let    
-    result = evalStmt stmt []
-    in
+play :: Stmt -> EvalContext -> IO()
+play stmt evalContext = do    
+    result <- evalStmt stmt []
     putStrLn (show result)
 
 run :: Stmt -> IO()
@@ -45,38 +44,63 @@ run stmt = do
 **** statements ****
 -}        
 
-evalPrint ::     Value -> EvalContext -> EvalContext
-evalPrint msg evalContext =  case msg of
-    BoolV b -> trace ("PR    Value :: "++show b)  evalContext
-    IntegerV i -> trace ("PR    Value :: "++show i)  evalContext
-    StrV s -> trace ("PR    Value :: "++s)  evalContext
-    NullV -> trace ("PR    Value :: NULL")  evalContext
+getMessage :: Value -> String
+getMessage msg = case msg of
+            BoolV b -> (show b)  
+            IntegerV i -> (show i) 
+            StrV s -> s  
+            NullV -> "NULL"
 
-evalSeq :: [Stmt] -> EvalContext -> EvalContext
+evalPrint ::     Value -> EvalContext -> IO EvalContext
+evalPrint msg evalContext = 
+    do 
+        let str = getMessage msg  
+        putStrLn ("PR    Value :: "++str)
+        return evalContext
+
+evalSeq :: [Stmt] -> EvalContext -> IO EvalContext
 evalSeq stmts evalContext = case stmts of 
-    [] -> evalContext
-    (stm:tail) -> evalSeq tail (evalStmt stm evalContext)
+    [] -> do return evalContext
+    (stm:tail) -> do
+        newContext <- (evalStmt stm evalContext) 
+        evalSeq tail newContext
+        
 
-evalWhile :: Expr -> Stmt -> EvalContext -> EvalContext
+evalWhile :: Expr -> Stmt -> EvalContext -> IO EvalContext
 evalWhile cond stmt evalContext 
-    | (evalExpr cond evalContext) == (BoolV False) = evalContext
-    | otherwise = evalWhile cond stmt (evalStmt stmt evalContext)
+    | (evalExpr cond evalContext) == (BoolV False) = 
+        do 
+            return evalContext
+    | otherwise = 
+        do
+            newContext <- (evalStmt stmt evalContext)
+            evalWhile cond stmt newContext
     
     
-evalIfThenElse :: Expr -> Stmt -> Stmt -> EvalContext -> EvalContext
+evalIfThenElse :: Expr -> Stmt -> Stmt -> EvalContext -> IO EvalContext
 evalIfThenElse cond stmThen stmElse evalContext
-    | (evalExpr cond evalContext)==(BoolV True) = (evalStmt stmThen evalContext)
-    | otherwise = (evalStmt stmElse evalContext)
+    | (evalExpr cond evalContext)==(BoolV True) = 
+        do
+            (evalStmt stmThen evalContext)
+    | otherwise = 
+        do 
+            (evalStmt stmElse evalContext)
     
-evalStmt :: Stmt -> EvalContext -> EvalContext
+evalStmt :: Stmt -> EvalContext -> IO EvalContext
 evalStmt stm evalContext = case stm of
-    Assign pos var expr ->  addOrReplaceValue var (evalExpr expr evalContext) evalContext
+    Assign pos var expr ->  do
+        return (addOrReplaceValue var (evalExpr expr evalContext) evalContext)
     --AssignB var expr ->  addOrReplaceInteger var (evalExpr expr evalContext) evalContext
-    If pos cond thenStmt elseStmt -> evalIfThenElse cond thenStmt elseStmt evalContext
-    While pos cond stm -> evalWhile cond stm evalContext
-    Seq stmts -> evalSeq stmts evalContext         
-    Print pos expr -> evalPrint (evalExpr expr evalContext) evalContext
-    Skip -> evalContext
+    If pos cond thenStmt elseStmt -> do 
+        evalIfThenElse cond thenStmt elseStmt evalContext
+    While pos cond stm -> do 
+        evalWhile cond stm evalContext
+    Seq stmts -> do 
+        evalSeq stmts evalContext         
+    Print pos expr -> do 
+        evalPrint (evalExpr expr evalContext) evalContext
+    Skip -> do
+        return evalContext
 
 
 {-
