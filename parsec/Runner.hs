@@ -47,10 +47,10 @@ setInHeap address value heap = replaceNth address value heap
 
 aBinOpFunction :: Int -> (Int -> Int -> Int)
 aBinOpFunction op = case op of
-    4 -> \x y -> x + y
-    5 -> \x y -> x - y
-    6 -> \x y -> x * y
-    7 -> \x y -> x `quot` y
+    50 -> \x y -> x + y
+    51 -> \x y -> x - y
+    52 -> \x y -> x * y
+    53 -> \x y -> x `quot` y
 
 
 
@@ -76,20 +76,30 @@ aNegOp machine =
 
 {- ********************************
     
+    STRING OPERATIONS
+
+   ******************************** -} 
+
+sBinOpFunction :: Int -> (String -> String -> String)
+sBinOpFunction op = case op of
+    61 -> \x y -> x ++ y
+
+{- ********************************
+    
     BOOL OPERATIONS
 
    ******************************** -}    
 
 rBinOpFunction :: Int -> (Int -> Int -> Bool)
 rBinOpFunction op = case op of
-    12 -> \x y -> x == y
-    13 -> \x y -> x > y
-    14 -> \x y -> x < y
+    58 -> \x y -> x == y
+    59 -> \x y -> x > y
+    60 -> \x y -> x < y
     
 bBinOpFunction :: Int -> (Bool -> Bool -> Bool)
 bBinOpFunction op = case op of
-    10 -> \x y -> x && y
-    11 -> \x y -> x ||  y
+    56 -> \x y -> x && y
+    57 -> \x y -> x ||  y
     
 
 
@@ -124,6 +134,17 @@ rBinaryOp machine opcode op =
                     let res =  ( op (getIntValue (x)) (getIntValue (y)) ) in
                         let appendedStack =  pushValue newStack (BoolVal res) in
                              do return $ (Machine ((pointer machine)+1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine))
+
+
+sBinaryOp :: Machine -> Int -> (String -> String -> String) -> IO Machine
+sBinaryOp machine opcode op = 
+    let popped =  (doublePopValue (stack machine)) in
+        let newStack =  (snd popped) in
+            let x =  (snd (fst popped)) in 
+                let y = (fst (fst popped)) in 
+                    let res =  ( op (getStringValue (x)) (getStringValue (y)) ) in
+                        let appendedStack =  pushValue newStack (StringVal res) in
+                             do return $ (Machine ((pointer machine)+1) (bytecode machine) appendedStack (heap machine) (heapAddresses machine))                             
 
 
 
@@ -212,41 +233,48 @@ genericOpCodeFunctions :: Int -> (Machine -> IO Machine)
 genericOpCodeFunctions opcode = case opcode of 
     1 -> pushOp
     3 -> movOp
-    8 -> aNegOp
-    9 -> bNotOp
-    18 -> printOp
-    19 -> noOp
-    15 -> unconditionalJump 
-    16 -> jumpIfTrue 
-    17 -> jumpIfNotTrue 
+    54 -> aNegOp
+    55 -> bNotOp
+    20 -> printOp
+    21 -> noOp
+    10 -> unconditionalJump 
+    11 -> jumpIfTrue 
+    12 -> jumpIfNotTrue 
     _ -> noOp
 
 
 
 runIt' :: Machine -> IO Machine        
 runIt' machine 
-    | (opCodeIn machine [1,3,8,9,15,16,17,18,19]) =  
+    | (opCodeIn machine [stackOpsStart..otherOpEnd]) =  
         let opCodeFunction = (genericOpCodeFunctions (opCode machine)) in
             let opIt=  opCodeFunction machine  in          
                 do 
                     machine <- opIt
                     runIt machine         
-    | (opCodeIn machine [4..7]) =             
+    | (opCodeIn machine [50..53] ) =             
              let opIt = (aBinaryOp machine  (opCode machine) (aBinOpFunction (opCode machine))) in
                 do 
                     machine <- opIt
                     runIt machine       
-    | (opCodeIn machine [10,11]) =             
+    | (opCodeIn machine [56,57]) =             
              let opIt = (bBinaryOp machine  (opCode machine) (bBinOpFunction (opCode machine))) in
                  do 
                     machine <- opIt
                     runIt machine  
-    | (opCodeIn machine [12,14]) =             
+    | (opCodeIn machine [58,60]) =             
              let opIt = (rBinaryOp machine  (opCode machine) (rBinOpFunction (opCode machine))) in
                 do 
                     machine <- opIt
                     runIt machine       
-    | otherwise = do return $ Machine (-1) [] [] [] []
+    | (opCodeIn machine [61]) =             
+             let opIt = (sBinaryOp machine  (opCode machine) (sBinOpFunction (opCode machine))) in
+                do 
+                    machine <- opIt
+                    runIt machine                           
+    | otherwise = do
+                    putStrLn ("unkown opcode "++(show (opCode machine)))
+                    return $ Machine (-1) [] [] [] []
 
 
 runMachine :: Machine -> IO Machine  

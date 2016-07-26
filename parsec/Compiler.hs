@@ -47,9 +47,9 @@ compileExpr expr machine = case expr of
     Var pos n -> Machine 0 (bytecode machine++[1,(getVariableInt n (heapAddresses machine))]) (stack machine) (heap machine) (heapAddresses machine)
     Binary op pos left right  -> compileBinary expr machine
     Neg pos expr -> let compiledExpr = compileExpr expr machine in
-        Machine 0 ((bytecode compiledExpr)++[8]) (stack compiledExpr) (heap compiledExpr) (heapAddresses compiledExpr)
+        Machine 0 ((bytecode compiledExpr)++[54]) (stack compiledExpr) (heap compiledExpr) (heapAddresses compiledExpr)
     Not pos expr -> let newMachine = compileExpr expr machine in
-        Machine 0 ((bytecode newMachine)++[9]) (stack newMachine) (heap newMachine) (heapAddresses newMachine)        
+        Machine 0 ((bytecode newMachine)++[55]) (stack newMachine) (heap newMachine) (heapAddresses newMachine)        
         
 
 
@@ -101,11 +101,11 @@ setJMPAddres destination opCodeAddress machine =
 compileIfThenElse :: Expr -> Stmt -> Stmt -> Machine -> Machine
 compileIfThenElse cond ifStmt elseStmt machine = 
     let compiledCond = compileExpr cond machine in
-        -- add JNt/JF (17) / reserve an emptycode (and store index)
-        let compiledConditionalJump = (Machine  0 ((bytecode compiledCond)++[17,0]) (stack compiledCond) (heap compiledCond) (heapAddresses compiledCond)) in
+        -- add JNt/JF (12) / reserve an emptycode (and store index)
+        let compiledConditionalJump = (Machine  0 ((bytecode compiledCond)++[12,0]) (stack compiledCond) (heap compiledCond) (heapAddresses compiledCond)) in
             let jntAddress = (length (bytecode compiledConditionalJump) ) in 
                 let comiledIfblock =  compileStmt ifStmt compiledConditionalJump in
-                    let compiledJMP = (Machine  0 ((bytecode comiledIfblock)++[15,0]) (stack comiledIfblock) (heap comiledIfblock) (heapAddresses comiledIfblock)) in
+                    let compiledJMP = (Machine  0 ((bytecode comiledIfblock)++[10,0]) (stack comiledIfblock) (heap comiledIfblock) (heapAddresses comiledIfblock)) in
                         let jmpAdress = (length (bytecode compiledJMP)) in 
                             let compiledElseBlock =  compileStmt elseStmt compiledJMP in
                                 let uncondjumpaddr =  (length (bytecode compiledElseBlock)) in                                                                
@@ -118,10 +118,10 @@ compileWhileStatement :: Expr -> Stmt -> Machine -> Machine
 compileWhileStatement cond block machine = 
     let loopStartAddress =  (length (bytecode machine)) in
         let compiledCond = compileExpr cond machine in 
-            let finishJump =  Machine 0  ((bytecode compiledCond)++[17,0]) (stack compiledCond) (heap compiledCond) (heapAddresses compiledCond)  in
+            let finishJump =  Machine 0  ((bytecode compiledCond)++[12,0]) (stack compiledCond) (heap compiledCond) (heapAddresses compiledCond)  in
                 let jntAddress = (length (bytecode finishJump)) in
                     let compiledLoopStmt = compileStmt block finishJump in
-                        let loopback = Machine 0 ((bytecode compiledLoopStmt)++[15,loopStartAddress]) (stack compiledLoopStmt) (heap compiledLoopStmt) (heapAddresses compiledLoopStmt) in 
+                        let loopback = Machine 0 ((bytecode compiledLoopStmt)++[10,loopStartAddress]) (stack compiledLoopStmt) (heap compiledLoopStmt) (heapAddresses compiledLoopStmt) in 
                             let finishLoopAddress = length (bytecode loopback) in
                                 let replacedJNT =  setJMPAddres finishLoopAddress jntAddress loopback in 
                                     replacedJNT
@@ -138,9 +138,9 @@ compileStmt stmt machine = case stmt of
     Assign pos name expr -> 
         let compiledExpr =   compileExpr expr machine in            
                 compileAssignByteCode name compiledExpr                
-    Skip ->   Machine 0 ((bytecode machine)++[19]) (stack machine) (heap machine) (heapAddresses machine)
+    Skip ->   Machine 0 ((bytecode machine)++[21]) (stack machine) (heap machine) (heapAddresses machine)
     If pos conf ifStmt elseStmt  ->   compileIfThenElse conf ifStmt elseStmt machine
     Print pos expr -> let previous =  compileExpr expr machine in
-         Machine 0 ((bytecode previous)++[18]) (stack previous) (heap previous) (heapAddresses previous)
+         Machine 0 ((bytecode previous)++[20]) (stack previous) (heap previous) (heapAddresses previous)
     Seq stmts ->  compileSequence stmts machine
     While pos cond block ->  compileWhileStatement cond block machine
