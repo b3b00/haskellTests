@@ -33,7 +33,7 @@ languageDef =
                                      , "or"
                                      , "print"
                                      ]
-           , Token.reservedOpNames = ["+", "-", "*", "/", ":="
+           , Token.reservedOpNames = ["+", "-", "*", "/", ":=","."
                                      , "<", ">", "and", "or", "not", "=="
                                      ]
            }
@@ -48,6 +48,7 @@ parens     = Token.parens     lexer -- parses surrounding parenthesis:
 integer    = Token.integer    lexer -- parses an integer
 semi       = Token.semi       lexer -- parses a semicolon
 whiteSpace = Token.whiteSpace lexer -- parses whitespace      
+stringLiteral = Token.stringLiteral lexer  -- parses stringe literal (surrounding by "")
 
 lexer = Token.makeTokenParser languageDef
 
@@ -143,7 +144,8 @@ operators = [ [Prefix (Neg <$> getPosition <* reservedOp "-")]
              , [Infix  (Binary Multiply <$> getPosition <* reservedOp "*") AssocLeft,
                 Infix  (Binary Divide <$> getPosition <* reservedOp "/") AssocLeft]
              , [Infix  (Binary Add <$> getPosition <* reservedOp "+") AssocLeft,
-                Infix  (Binary Substract <$> getPosition <* reservedOp "-") AssocLeft],
+                Infix  (Binary Substract <$> getPosition <* reservedOp "-") AssocLeft,
+                Infix  (Binary Concat <$> getPosition <* reservedOp ".") AssocLeft],
              [Prefix (Not <$> getPosition <* reservedOp "not")]           
              , [Infix (Binary And <$> getPosition <* reservedOp "and") AssocLeft,
                 Infix (Binary Or <$> getPosition <* reservedOp "or") AssocLeft
@@ -158,9 +160,9 @@ term =  parens expression
      <|> do id <- identifier
             pos <- getPosition
             return $ Var pos id 
-     <|> do str <- stringLiteral 
+     <|> do str <- stringLiteral
             pos <- getPosition 
-            return StringConst pos str
+            return $ StringConst pos str
      <|> do v <- integer 
             pos  <- getPosition 
             return $ IntConst pos v 

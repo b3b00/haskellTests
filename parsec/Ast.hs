@@ -8,7 +8,7 @@ import Text.Parsec(SourcePos)
 
 data Expr = BoolConst SourcePos Bool 
   | IntConst SourcePos Integer
-  | StringConstSourcePos String
+  | StringConst SourcePos String
   | Var SourcePos String 
   | Neg SourcePos Expr 
   | Not SourcePos Expr 
@@ -25,6 +25,7 @@ data BinOp = Add
   | Greater
   | Lesser
   | Equals
+  | Concat
     deriving (Show)
 
 data Stmt = Seq [Stmt]

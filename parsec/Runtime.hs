@@ -6,13 +6,23 @@ import Debug.Trace (trace)
 
 
 
-data Value = StrV String
+data Value = StringV String
            | IntegerV Integer
            | BoolV Bool
            | NullV
             deriving (Show, Eq)
 
+
+
 type EvalContext = [(String, Value)]
+
+
+valueToString :: Value  -> String
+valueToString sv = case sv of
+    IntegerV x -> (show x)
+    BoolV b -> (show b)
+    StringV s -> s
+    NullV -> "null"
 
 {-
 **** accesing variable mapping
@@ -48,14 +58,14 @@ getMessage :: Value -> String
 getMessage msg = case msg of
             BoolV b -> (show b)  
             IntegerV i -> (show i) 
-            StrV s -> s  
+            StringV s -> (trace("GETMESSAGE "++ s)) s  
             NullV -> "NULL"
 
 evalPrint ::     Value -> EvalContext -> IO EvalContext
 evalPrint msg evalContext = 
     do 
-        let str = getMessage msg  
-        putStrLn ("PR    Value :: "++str)
+        let str = (trace ("PRINTING "++(show msg))) getMessage msg  
+        putStrLn ("PR    Value :: "++(show str))
         return evalContext
 
 evalSeq :: [Stmt] -> EvalContext -> IO EvalContext
@@ -122,6 +132,7 @@ evalExpr :: Expr -> EvalContext -> Value
 evalExpr expr evalContext = case expr of 
     BoolConst pos b -> BoolV b
     IntConst pos i -> IntegerV i
+    StringConst pos s -> StringV s
     Not pos e ->  BoolV (not (getBoolValue (evalExpr e evalContext)))
     Neg pos e ->  IntegerV (-(getIntegerValue (evalExpr e evalContext)))
     Binary And pos left right -> evalBoolOp evalContext (&&) left right
@@ -133,6 +144,7 @@ evalExpr expr evalContext = case expr of
     Binary Lesser pos left right -> evalRelIntegerOp evalContext (<) left right
     Binary Greater pos left right -> evalRelIntegerOp evalContext (>) left right
     Binary Equals pos left right -> evalRelIntegerOp evalContext (==) left right
+    Binary Concat pos left right -> evalStringOp evalContext (++) left right
     Var pos n -> getVariableVal n evalContext
     
 
@@ -144,5 +156,14 @@ evalIntegerOp context op i1 i2  =  IntegerV (op (getIntegerValue (evalExpr i1 co
 
 evalRelIntegerOp ::  EvalContext -> (Integer -> Integer -> Bool) -> Expr -> Expr -> Value 
 evalRelIntegerOp context op i1 i2  =  BoolV (op (getIntegerValue (evalExpr i1 context)) (getIntegerValue (evalExpr i2 context)))
+
+{-evalStringOp :: EvalContext ->  (String -> String -> String) -> Expr -> Expr ->  Value
+evalStringOp context op s1 s2 = let val1 = (valueToString (evalExpr s1 context)) in
+                                    let val2 = (trace ("C1 :: "++val2)) (valueToString (evalExpr s2 context)) in
+                                        let  concat = (trace ("C2 :: "++val2))  (op val1 val2) in                
+                                            (trace ("C3 :: "++concat)) StringV (concat)-}
+
+evalStringOp :: EvalContext ->  (String -> String -> String) -> Expr -> Expr ->  Value
+evalStringOp context op s1 s2 = StringV (op (valueToString (evalExpr s1 context)) (valueToString (evalExpr s2 context)))           
 
 

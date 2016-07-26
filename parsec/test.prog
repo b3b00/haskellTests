@@ -7,7 +7,11 @@ skip
 i := 0;
 while (i < 11) do
     (print i;
+    print "toto " . "titi" ;
+    print "int:: " . 6 ;
+    print "bool:: " . true ;
     i := i + 1 )
+
 )
 
 /*(

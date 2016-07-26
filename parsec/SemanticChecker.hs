@@ -23,6 +23,7 @@ addOrReplaceVarType key value assoc = (key,value):(filter ((key /=).fst) assoc)
 
 data ExprType = IntExpr
   | BoolExpr
+  | StringExpr
   | UnknownExpr
   | ErrorExpr
   deriving (Eq)
@@ -31,6 +32,7 @@ instance Show ExprType where
   show expr = case expr of 
     IntExpr -> "int"
     BoolExpr -> "bool"
+    StringExpr -> "string"
     UnknownExpr -> "unknwon"
     ErrorExpr -> "error"
 
@@ -139,6 +141,11 @@ binaryCompatibilty types pos = case types  of
     (Lesser, IntExpr, IntExpr) -> (BoolExpr,[])
     (Greater, IntExpr, IntExpr) -> (BoolExpr,[])
     (Equals, IntExpr, IntExpr) -> (BoolExpr,[])
+    (Concat,StringExpr,StringExpr) -> (StringExpr,[])
+    (Concat,StringExpr,IntExpr) -> (StringExpr,[])
+    (Concat,StringExpr,BoolExpr) -> (StringExpr,[])
+    (Concat,IntExpr,StringExpr) -> (StringExpr,[])
+    (Concat,BoolExpr,StringExpr) -> (StringExpr,[])
     otherwise -> (ErrorExpr,["uncompatible types ("++(show (second types))++" and "++(show (third types))++") for "++(show (first types))++" at "++(showPos pos)])
 
 
@@ -146,6 +153,7 @@ getExprType :: Expr -> [(String,ExprType)] -> CheckResult
 getExprType expr varTypes = case expr of 
     IntConst i pos ->  (IntExpr,[])
     BoolConst b pos -> (BoolExpr,[])
+    StringConst str pos -> (StringExpr,[])
     Var pos n -> let varType = (getVariableType n varTypes) in
                     if varType == UnknownExpr then
                          (varType, ["unknwon variable "++n++" at "++(showPos pos)])
@@ -159,6 +167,7 @@ getExprType expr varTypes = case expr of
     Not pos exprN -> let rightType = (trace ("testing not "++(show exprN))) getExprType exprN varTypes in
         if ((fst rightType) == BoolExpr) then (BoolExpr,[]) else (ErrorExpr ,["bad type for unary 'not' operator at "++(showPos pos)]++(snd rightType)) 
             
+
 
 
 

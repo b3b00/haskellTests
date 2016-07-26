@@ -43,6 +43,7 @@ compileExpr :: Expr ->  Machine -> Machine
 compileExpr expr machine = case expr of
     IntConst ops i  ->  Machine 0 (bytecode machine++[1, (length( heap machine))]) (stack machine) (heap machine++[IntVal (fromIntegral i)])  (heapAddresses machine)
     BoolConst pos b  -> Machine 0 (bytecode machine++[1, (length( heap machine))]) (stack machine) (heap machine++[BoolVal b]) (heapAddresses machine)
+    StringConst pos s  -> Machine 0 (bytecode machine++[1, (length( heap machine))]) (stack machine) (heap machine++[StringVal s]) (heapAddresses machine)
     Var pos n -> Machine 0 (bytecode machine++[1,(getVariableInt n (heapAddresses machine))]) (stack machine) (heap machine) (heapAddresses machine)
     Binary op pos left right  -> compileBinary expr machine
     Neg pos expr -> let compiledExpr = compileExpr expr machine in
@@ -52,17 +53,19 @@ compileExpr expr machine = case expr of
         
 
 
+
 binOpCode :: BinOp -> Int
 binOpCode op = case op of
-    Add -> 4
-    Substract -> 5
-    Multiply -> 6
-    Divide -> 7
-    And -> 10
-    Or -> 11
-    Greater -> 13
-    Lesser  -> 14
-    Equals -> 12
+    Add -> 59
+    Substract -> 51
+    Multiply -> 52
+    Divide -> 53
+    And -> 56
+    Or -> 57
+    Greater -> 59
+    Lesser  -> 60
+    Equals -> 58
+    Concat -> 61
  
 
 
@@ -72,7 +75,7 @@ compileBinary expr machine = case expr of
         let leftMachine = compileExpr left machine in          -- 1: compile left
             let rightMachine = compileExpr right leftMachine in    -- 2: compile right
                 (Machine 0 ((bytecode rightMachine)++[(binOpCode op)]) (stack rightMachine) (heap rightMachine) (heapAddresses rightMachine))
-    otherwise -> error "incorrect execution path !"
+    otherwise -> error ("incorrect execution path ! "++(show expr))
 
 
 

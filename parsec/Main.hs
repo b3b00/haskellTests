@@ -41,7 +41,7 @@ printHeap machine = do
 
 dispatch :: [(String, [String] -> IO ())]
 dispatch =  [ ("-r", runBC)
-            , ("-compile", compile)
+            , ("-c", compile)
             , ("-i", interprete)
             --, ("-compileAndRun", compileAndRun)
             ]

@@ -52,6 +52,47 @@ une machine est consitutée de
     * la table des addresses de variables dans le tas
 -}  
 
+
+stackOpsStart = 1
+stackOpEnd = 3
+
+jumpOpStart = 10
+jummOpEnd = 12
+
+otherOpStart = 20
+otherOpEnd = 21
+
+binaryOpStart = 50
+binaryOPEnd = 61
+
+opcodesToMemo = [(1,"PUSH")
+                ,(2,"POP")
+                ,(3,"MOV")
+                ,(10,"JMP")
+                ,(11,"JT")
+                ,(12,"JNT")
+                ,(20,"PRINT")
+                ,(21,"NOOP")
+                ,(50,"ADD")
+                ,(51,"SUB")
+                ,(52,"MUL")
+                ,(53,"DIV")
+                ,(54,"NEG")
+                ,(55,"NOT")
+                ,(56,"AND")
+                ,(57,"OR")
+                ,(58,"EQ")
+                ,(59,"GT")
+                ,(60,"LT")
+                ,(61,"CONCAT")
+                ]
+
+memoToOpcode :: [(String,Int)]
+memoToOpcode = [(val,key) |  (key, val) <- opcodesToMemo]
+
+
+
+
 data Machine = Machine {
     pointer :: Int
     , bytecode :: [Int]
@@ -63,30 +104,12 @@ data Machine = Machine {
 
 -- | retourne un memocode d'instruction (String) à partir d'un opcode
 memCode :: Int -> String
-memCode mc = case mc of
-    1 -> "PUSH"
-    2 -> "POP"
-    3 -> "MOV"
-    4 -> "ADD"
-    5 -> "SUB"
-    6 -> "MUL"
-    7 -> "DIV"
-    8 -> "NEG"
-    9 -> "NOT"
-    10 -> "AND"
-    11 -> "OR"
-    12 -> "EQ"
-    13 -> "GT"
-    14 -> "LT"
-    15 -> "JMP"
-    16 -> "JT"
-    17 -> "JNT"
-    18 -> "PRINT"
-    19 -> "NOOP"    
-    _ -> "UNKNOWN"
+memCode bc = case lookup bc opcodesToMemo of
+    Just m -> m
+    Nothing -> "UNKNOWN"
 
 -- | liste des instructions (opcodes) ne prenant pas de paramètres
-zeroParamsOpCodes = [4,5,6,7,8,9,10,11,12,13,14,18,19]
+zeroParamsOpCodes = [stackOpsStart..stackOpEnd]++[otherOpStart..otherOpEnd]++[binaryOpStart..binaryOPEnd]
 
 -- | retourne l'opcode de l'instruction courante de la machine
 opCode :: Machine -> Int

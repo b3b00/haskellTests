@@ -2,23 +2,23 @@ module Stack where
 import Debug.Trace (trace)
 
 
-data StackValue = StrVal String
+data StackValue = StringVal String
            | IntVal Int
            | BoolVal Bool
            | NullVal
             deriving (Show, Eq, Read)
 
- 
-stackValueToString sv = case sv of
-    IntVal x -> "int("++(show x)++")"
-    BoolVal b -> "bool("++(show b)++")"
-    StrVal s -> "string("++(show s)++")"
+getStringValue :: StackValue  -> String
+getStringValue sv = case sv of
+    IntVal x -> (show x)
+    BoolVal b -> (show b)
+    StringVal s -> s
     NullVal -> "null"
 
 stackToString :: [StackValue] -> String
 stackToString stack = case stack of
     [] -> ""
-    _ -> (stackValueToString (head stack))++" ,"++(stackToString (tail stack))
+    _ -> (getStringValue (head stack))++" ,"++(stackToString (tail stack))
 
 
 peekValue :: [StackValue] -> StackValue 
@@ -46,6 +46,7 @@ getBoolValue :: StackValue -> Bool
 getBoolValue stackVal = case stackVal of
     IntVal i -> if i==0 then False else True
     BoolVal b -> b
+    StringVal s -> if s == "" then False else True
     NullVal -> True
 
 getIntValue :: StackValue -> Int
