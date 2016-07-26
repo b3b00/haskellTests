@@ -43,7 +43,7 @@ dispatch :: [(String, [String] -> IO ())]
 dispatch =  [ ("-r", runBC)
             , ("-c", compile)
             , ("-i", interprete)
-            --, ("-compileAndRun", compileAndRun)
+            , ("-cr", compileAndRun)
             ]
 
 {- run ByteCode -}
@@ -54,18 +54,22 @@ runBC args = do
             
 
 runFile :: String -> IO()
-runFile machineSerial  = do
-        let machine = read machineSerial 
+runFile machineSerial  = do        
+        let machine = loadMachine machineSerial 
+        putStrLn("machine loaded...")
         result <- runIt machine   
-        putStrLn "done :: "
         printHeap result       
                 
 {- compile to byetcode -}
+
+loadMachine :: String -> Machine
+loadMachine serialized = read serialized
 
 compile :: [String] -> IO()
 compile args = 
     do 
         ast <-  (parseFile (args!!0))   
+        putStrLn (show ast)
         let out = (args!!1) 
             checked = semanticCheck ast 
         if length checked > 0 then            
@@ -77,19 +81,24 @@ compile args =
                 writeFile out serialized
                 putStrLn ("compilation done to "++out)
 
-{-compileAndRun :: [String] -> IO()
+compileAndRun :: [String] -> IO()
 compileAndRun args =       
     do
         ast <- (parseFile (args !! 0))  
-        putStrLn "to refactor something wrong here "                    
-        let checked = semanticCheck ast in
-            if length checked > 0 then            
-                putStrLn ("semantic chec failed "++(show checked))  
-            else 
-                let compiled = (compileAst ast (Machine 0 [] [] [] []) ) in
-                    result <- runIt compiled 
-                    putStrLn "done :: "
-                    printHeap result-}
+             
+        let checked = semanticCheck ast 
+        {-if length checked > 0 then            
+            putStrLn ("semantic chec failed "++(show checked))  
+        else-}
+        putStrLn("checked :: "++(show checked))
+        let compiled = (compileAst ast (Machine 0 [] [] [] []) )
+        putStrLn("compiled :: "++(show compiled))
+        putStrLn ""
+        putStrLn "---"
+        putStrLn (printAssemblyBC (bytecode compiled))
+        --result <- runIt compiled 
+        putStrLn "done :: "
+        --printHeap result
 
 {- interprete -}                            
 interprete :: [String] -> IO()

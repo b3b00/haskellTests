@@ -6,30 +6,7 @@ import Machine
 import Stack
 --import Assoc
 import Debug.Trace (trace)
-{-
 
-todo : define bytecode / assembly
-
-1   PUSH    push a value on stack (next bc value is value address)
-2   POP pop a value from stack
-3   MOV pop value from stack and store in heap at next bytecode
-4   ADD add the two topmost values and push result
-5   SUB substract the two topmost values and push result
-6   MUL multiply the two topmost values and push result
-7   DIV divide the two topmost values and push result
-8   NEG negate top most value on stack
-9   NOT push true if top most is false, false otherwise
-10  AND push and value of 2 topmost
-11  OR  push or value of 2 topmost
-12  EQ  push true if two top values are equals
-13  GT  push true if n-1 > n
-14  LT  push true if n-1 < n
-15  JMP move code pointer to next bytecode avlue
-16  JT  move code pointer to next bytecode avlue if top stack value is True
-17  JNT move code pointer to next bytecode avlue if top stack value is False
-18  PRT print top most value
-
--}
 
 replaceNth n newVal (x:xs)
      | n == 0 = newVal:xs     
@@ -82,7 +59,7 @@ aNegOp machine =
 
 sBinOpFunction :: Int -> (String -> String -> String)
 sBinOpFunction op = case op of
-    61 -> \x y -> x ++ y
+    61 -> \x y ->  x ++ y
 
 {- ********************************
     
@@ -182,7 +159,7 @@ printOp machine =
         let newStack = (snd popped) in
             let value = (fst popped) in
                 do 
-                    putStrLn ("PRINT "++(show value))
+                    putStrLn (getStringValue value)
                     return $ ((Machine ((pointer machine) +1) (bytecode machine) newStack (heap machine) (heapAddresses machine)))
 
 
@@ -194,13 +171,13 @@ noOp machine = do return $ (Machine ((pointer machine) +1) (bytecode machine) (s
 
 
 unconditionalJump :: Machine -> IO Machine
-unconditionalJump machine = let dest =  opCodeRel machine 1  in 
-        do return $ (Machine dest (bytecode machine) (stack machine) (heap machine) (heapAddresses machine))
+unconditionalJump machine = let dest =  (opCodeRel machine 1)  in 
+        do  return $ (Machine dest (bytecode machine) (stack machine) (heap machine) (heapAddresses machine))
 
 jumpIfTrue :: Machine -> IO Machine 
 jumpIfTrue machine = let dest =  opCodeRel machine 1  in 
                 let popped = popValue (stack machine) in
-                    if (fst popped) == (BoolVal True) then
+                    if (fst popped) == (BoolVal True) then                        
                         do return $ (Machine dest (bytecode machine) (stack machine) (heap machine) (heapAddresses machine))
                     else 
                         do return $ (Machine ((pointer machine)+2) (bytecode machine) (stack machine) (heap machine) (heapAddresses machine))
@@ -262,7 +239,7 @@ runIt' machine
                  do 
                     machine <- opIt
                     runIt machine  
-    | (opCodeIn machine [58,60]) =             
+    | (opCodeIn machine [58..60]) =             
              let opIt = (rBinaryOp machine  (opCode machine) (rBinOpFunction (opCode machine))) in
                 do 
                     machine <- opIt

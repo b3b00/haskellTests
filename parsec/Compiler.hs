@@ -56,7 +56,7 @@ compileExpr expr machine = case expr of
 
 binOpCode :: BinOp -> Int
 binOpCode op = case op of
-    Add -> 59
+    Add -> 50
     Substract -> 51
     Multiply -> 52
     Divide -> 53

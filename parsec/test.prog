@@ -6,11 +6,12 @@ skip
 ( 
 i := 0;
 while (i < 11) do
-    (print i;
+    (print "iteration " . i;
     print "toto " . "titi" ;
     print "int:: " . 6 ;
     print "bool:: " . true ;
-    i := i + 1 )
+    i := i + 1 );
+ print "done"
 
 )
 
