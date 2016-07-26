@@ -65,7 +65,7 @@ evalPrint ::     Value -> EvalContext -> IO EvalContext
 evalPrint msg evalContext = 
     do 
         let str = (trace ("PRINTING "++(show msg))) getMessage msg  
-        putStrLn ("PR    Value :: "++(show str))
+        putStrLn ((show str))
         return evalContext
 
 evalSeq :: [Stmt] -> EvalContext -> IO EvalContext
